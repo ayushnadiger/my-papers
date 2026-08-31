@@ -1,0 +1,153 @@
+\documentclass[aps,prx,reprint,superscriptaddress,nofootinbib,longbibliography,floatfix]{revtex4-2}
+\usepackage[T1]{fontenc}\usepackage{amsmath,amssymb,mathtools,amsthm}\usepackage{booktabs,microtype,hyperref}
+\newtheorem{proposition}{Proposition}\newtheorem{theorem}[proposition]{Theorem}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\begin{document}
+\title{Throughput Is Not Enough: Synchronization and Loss Constraints for GKP-State Factories in High-Rate Photonic Repeaters}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+
+\begin{abstract}
+High-rate all-photonic repeaters can require thousands of approximate Gottesman--Kitaev--Preskill (GKP) states at every repeater station in each protocol cycle. A resource count specifies payload scale but not the stochastic source/refinery service needed to start a synchronized network cycle. We formulate the missing service contract in terms of accepted-state count, quality, age, and routing/storage loss. Using the high-rate GKP--Steane repeater of Shiina \emph{et al.} only as the demand-scale anchor, we take an illustrative payload of $N=3800$ service-qualified GKP states per station-cycle, $S=111$ synchronized stations, and an independent factory-readiness target $p_F=0.999$. Under iid Poisson accepted production, exact tail inversion requires mean count 4070.15 per station-cycle, a 7.109\% margin above deterministic flow; at an illustrative 100-kHz factory clock this corresponds to $4.070\times10^8$ accepted states/s/station. Common-mode source jitter is much more expensive: Gamma--Poisson benchmarks with 5\% and 10\% RMS station-level rate variation require 26.286\% and 60.080\% overhead at the same synchronized service target, while a moment-only Cantelli bound shows that RMS alone cannot certify such an extreme tail. Pooling and FIFO reserve suppress independent shot-noise tails but convert count variance into age. In an explicit ten-cycle synchronized quasi-stationary benchmark, a one-cycle reserve reduces the required Poisson mean to approximately 3804.63 states/cycle, only 0.1219\% above the payload, while about 90.15\% of consumed states are one cycle old. Routing and storage loss therefore turn temporal smoothing into a quality constraint. The result is an inverse-design service layer: it does not claim that a present GKP source satisfies the contract, but converts a repeater-scale payload into falsifiable requirements on the joint distribution delivered by a physical source/refinery.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+GKP encodings are attractive for photonic quantum communication because Gaussian operations can manipulate encoded information while analog measurement information can be retained for decoding and entanglement ranking. All-photonic GKP repeater proposals exploit these properties through multiplexing, deterministic Gaussian processing, and concatenation with discrete-variable error correction. The resource challenge is severe: a single protocol run can require thousands of GKP states at each repeater station.
+
+Recent work makes both sides of this interface concrete. Rozp\k{e}dek \emph{et al.} showed that analog-information-assisted multiplexing can support long-distance all-photonic GKP repeaters with roughly $10^3$--$10^4$ GKP qubits per repeater in favorable regimes. Shiina, Goodenough, Arnold, and Rozp\k{e}dek subsequently proposed a high-rate GKP--Steane architecture with 9-km spacing and reported that approximately 3800 initial GKP qubits per repeater station per protocol run suffice at a representative operating point. Their own ``$>0.999$'' and ``$>0.9999$'' resource counts already refer to simultaneous preparation success across the repeater chain; we therefore do not reinterpret those labels as an independent downstream probability. In parallel, integrated photonic generation of GKP states has demonstrated the mode-level non-Gaussian structure required for encoded photonics.
+
+A separate systems question remains between a payload count and a physical source/refinery: if a station requires $N$ \emph{service-qualified} states from an upstream factory on a synchronized clock, what accepted-count distribution, correlation control, buffering, and routing loss are required? The answer cannot be a mean rate alone. A global cycle can stall if one station is short; common-mode pump, fabrication, control, or environmental fluctuations can dominate the lower tail; and pooling or buffering smooths counts only by consuming switching depth or state age.
+
+We therefore represent the factory handoff by a joint distribution
+\begin{equation}
+\mathcal S_{\rm GKP}=P(N_{\rm acc},Q,A,\eta_{\rm route}),
+\end{equation}
+where $N_{\rm acc}$ is accepted count, $Q$ summarizes the quality information used by the downstream acceptance/decoder model, $A$ is age, and $\eta_{\rm route}$ is switching/storage transmission. The contribution is deliberately inverse-design: the paper derives service margins and tradeoffs without claiming a microscopic source already realizes them.
+
+\section{Reliability-budget convention}
+In general, if a source-qualified batch event $F$ is followed by a downstream event $C$ with declared conditional probability $\Prob(C\mid F)=p_C$, then a total readiness target $p_{\rm tot}$ requires
+\begin{equation}
+\Prob(F)\ge p_{\rm tot}/p_C,
+\end{equation}
+provided those events are genuinely distinct. This composition law is useful, but it is \emph{not} how we interpret the numerical labels in Shiina \emph{et al.}: their initial-resource probabilities already refer to simultaneous preparation across all stations.
+
+For the standalone factory benchmark below we instead declare directly
+\begin{equation}
+N=3800,\qquad S=111,\qquad p_F=0.999.
+\end{equation}
+The value $N=3800$ is a rounded payload-scale anchor motivated by the reported high-rate repeater resource point; $S=111$ is a representative chain-scale synchronization count. These choices define our inverse-design scenario rather than reproduce a hidden source-paper operating point.
+
+For accepted counts $A_1,\ldots,A_S$, the factory service event is
+\begin{equation}
+\Prob(A_1\ge N,\ldots,A_S\ge N)\ge p_F.
+\label{eq:global}
+\end{equation}
+If stations are iid and independent at the service-event level, each station must satisfy
+\begin{equation}
+\Prob(A\ge N)\ge p_F^{1/S}=0.9999909865.
+\end{equation}
+This independence assumption defines only the shot-noise baseline; correlated production is treated separately.
+
+\section{Independent production: binomial and Poisson laws}
+If $M$ parallel source opportunities independently yield accepted states with probability $y$ per cycle, then
+\begin{equation}
+A\sim\mathrm{Binomial}(M,y),
+\end{equation}
+and the minimum $M$ is obtained by exact binomial-tail inversion of Eq.~\eqref{eq:global}. In the low-yield/high-parallelism limit with $\lambda=My$, $A$ is Poisson and the one-station requirement becomes
+\begin{equation}
+\sum_{a=N}^{\infty}e^{-\lambda}\frac{\lambda^a}{a!}\ge p_F^{1/S}.
+\label{eq:poisson}
+\end{equation}
+
+For $N=3800$, $S=111$, and $p_F=0.999$, exact inversion gives
+\begin{equation}
+\boxed{\lambda_*=4070.1489},
+\end{equation}
+a count margin
+\begin{equation}
+\frac{\lambda_*-N}{N}=7.10918\%.
+\end{equation}
+At an illustrative $100\,\mathrm{kHz}$ factory clock this corresponds to $4.07015\times10^8$ accepted states/s/station. The clock converts the per-cycle requirement into a rate; it is not required by the tail theorem.
+
+\section{Common-mode jitter}
+Independent Poisson shot noise is optimistic if a station-cycle has a random multiplicative rate factor $Z$. Conditional on $Z=z$, let
+\begin{equation}
+A\mid Z=z\sim\mathrm{Poisson}(\lambda z),\qquad \E Z=1.
+\end{equation}
+A Gamma distribution provides a transparent Gamma--Poisson benchmark. If the RMS fractional rate fluctuation is $r$, choose Gamma shape $k=r^{-2}$ and scale $1/k$. The mixed count is negative binomial with mean $\lambda$ and variance $\lambda+\lambda^2/k$.
+
+Exact lower-tail inversion at the same synchronized target gives
+\begin{align}
+\lambda_{5\%}&=4798.8595, & (\lambda_{5\%}-N)/N&=26.2858\%,\\
+\lambda_{10\%}&=6083.0401, & (\lambda_{10\%}-N)/N&=60.0800\%.
+\end{align}
+The large increase comes from the lower tail of a synchronized event, not from a changed mean.
+
+An RMS specification alone is not a certification. With only mean and variance known, Cantelli's inequality gives
+\begin{equation}
+\Prob(A-\E A\le-a)\le\frac{\operatorname{Var}A}{\operatorname{Var}A+a^2},
+\end{equation}
+which is far too loose at the required local shortage probability. A repeater-grade factory therefore needs either a measured tail/joint distribution or a physically justified fluctuation model beyond its first two moments.
+
+\section{Pooling versus labeled near-determinization}
+Suppose accepted states are produced by many elementary sources. One architecture attempts to make every labeled downstream port succeed independently with very high probability; another pools accepted states and asks only that aggregate inventory exceed $N$. The labeled architecture pays a reliability penalty repeatedly because every port must be ready. In common independent-retry constructions, driving each of $N$ labeled failure probabilities to $O(1/N)$ produces a logarithmic near-determinization overhead. A pooled inventory pays one aggregate count tail.
+
+Pooling is therefore a statistical resource, but not a free one. The router that realizes fungibility has insertion loss, finite depth, and finite control bandwidth. The correct design problem couples the count-tail reduction to $\eta_{\rm route}$ rather than treating arbitrary permutation as costless.
+
+\section{FIFO reserve: count variance versus age}
+Let $X_t$ be new accepted production in cycle $t$, $B_t\in\{0,\ldots,B_{\max}\}$ the reserve at cycle start, and demand $N$. A cycle succeeds if $B_t+X_t\ge N$, after which
+\begin{equation}
+B_{t+1}=\min\{B_{\max},B_t+X_t-N\}.
+\end{equation}
+Failure makes the nonfailure transition kernel substochastic. To state a reproducible long-lived operating benchmark, set $B_{\max}=N$ and use the quasi-stationary distribution $q$ of this survival kernel, with dominant survival eigenvalue $\rho$. We require ten consecutive cycles across all $S=111$ stations to satisfy
+\begin{equation}
+\rho^{10S}\ge0.999.
+\label{eq:qsdtarget}
+\end{equation}
+
+For iid Poisson production, monotone inversion of Eq.~\eqref{eq:qsdtarget} gives
+\begin{equation}
+\lambda_{\rm buf}\simeq3804.633,
+\end{equation}
+only
+\begin{equation}
+\frac{\lambda_{\rm buf}-N}{N}\simeq0.1219\%
+\end{equation}
+above deterministic flow. In the same quasi-stationary survivor ensemble, the mean reserve consumed under FIFO corresponds to approximately 90.15\% one-cycle-old states, while the mean overflow discarded after a served cycle is about 4.64 states. The unbuffered Poisson service point, by comparison, has mean excess production of about 270 states/cycle.
+
+This benchmark is intentionally explicit about both horizon and conditioning. It demonstrates the substitution rather than claiming free permanent capacity: smoothing an extreme independent count tail makes the factory operate close to mean flow by carrying old quantum inventory.
+
+If accepted-state quality changes with age or storage, the service event must therefore be upgraded from a count condition to
+\begin{equation}
+\#\{i:Q_i(A_i)\ge Q_{\min},\ \eta_i\ge\eta_{\min}\}\ge N.
+\end{equation}
+Count smoothing is useful only while the aged distribution remains inside the repeater decoder's acceptance region.
+
+\section{Routing-loss target}
+Large GKP factories also require optical switching or feed-forward routing. If a state traverses $d$ statistically similar routing stages of transmission $\eta_{\rm sw}$, then $\eta_{\rm route}=\eta_{\rm sw}^d$. Given an allowed total routing loss $L_{\rm route}$ in decibels,
+\begin{equation}
+L_{\rm sw}\le \frac{L_{\rm route}}{d}.
+\end{equation}
+For a representative large-port depth $d=17$, even a modest total routing-loss allowance yields a per-stage budget of only a few millidecibels. This is an inverse-design target; it is not evidence that a particular switch technology already satisfies the repeater requirement.
+
+\section{Relation to present GKP hardware}
+Integrated photonic GKP-state generation has demonstrated multiple resolvable peaks in both quadratures and a negative-Wigner lattice on chip. This is a major source milestone but it does not by itself provide the joint high-throughput accepted-state process assumed here. Conversely, a repeater resource table specifies protocol-scale inventory but does not fully define the upstream source/refinery process that produces, selects, buffers, and routes those states.
+
+The service contract identifies the missing handoff measurements: accepted yield under the actual refinement rule, cycle-to-cycle and cross-source correlation, quality conditioned on acceptance, switching/storage loss, and age dependence of the analog information passed to the decoder. These quantities can be measured independently of which microscopic GKP-source technology is ultimately used.
+
+\section{Discussion}
+The deterministic payload and physical factory are separated by a statistically nontrivial layer. Under independent production the safety margin is modest but finite; common-mode jitter can dominate it; pooling reduces repeated tail penalties; and a one-cycle reserve can suppress independent shot-noise overhead only by aging most consumed states. Routing and storage can then consume the quality margin that statistical smoothing was intended to save.
+
+The paper intentionally does not claim end-to-end logical performance of a specific finite-energy source. A physical source/refinery model should output $P(N_{\rm acc},Q,A,\eta_{\rm route})$, after which the repeater construction and analog decoder can determine whether the contract is met. The present work supplies a transparent service layer against which such a model can be tested.
+
+\section{Conclusion}
+A high-rate GKP repeater does not require only a certain number of states per second. It requires enough service-qualified states, at every station, on the same cycle, after routing, with an age distribution the decoder can tolerate. Expressing the factory in that form turns a protocol-scale payload into a falsifiable hardware specification and makes synchronization, correlation, multiplexing, and storage explicit co-design variables.
+
+\begin{thebibliography}{20}
+\bibitem{Rozpedek2023} F. Rozp\k{e}dek, K. P. Seshadreesan, P. Polakos, L. Jiang, and S. Guha, All-photonic Gottesman--Kitaev--Preskill-qubit repeater using analog-information-assisted multiplexed entanglement ranking, \emph{Phys. Rev. Research} \textbf{5}, 043056 (2023).
+\bibitem{Shiina2026} R. Shiina, K. Goodenough, N. Arnold, and F. Rozp\k{e}dek, High-Rate and Resource-Efficient All-Photonic Quantum Repeater Architectures with 9 km Repeater Spacing, arXiv:2606.25314v2 (2026).
+\bibitem{IntegratedGKP2025} M. V. Larsen \emph{et al.}, Integrated photonic source of Gottesman--Kitaev--Preskill qubits, \emph{Nature} \textbf{642}, 587--591 (2025), doi:10.1038/s41586-025-09044-5.
+\end{thebibliography}
+\end{document}
