@@ -1,0 +1,193 @@
+\documentclass[aps,prx,preprint,superscriptaddress,nofootinbib,longbibliography]{revtex4-2}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,mathtools,amsthm,booktabs,microtype,hyperref,siunitx}
+\newtheorem{theorem}{Theorem}\newtheorem{proposition}[theorem]{Proposition}\newtheorem{lemma}[theorem]{Lemma}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\begin{document}
+\title{Supplemental Material for ``Occupancy-Aware Reset Control for Sequential Quantum Repeaters with Exposure-Aged Spin--Photon Interfaces''}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+\maketitle
+
+\section{Measured inputs versus scenario inputs}
+The main manuscript combines measurements from different T-center experiments only to generate hardware-target envelopes. The exact renewal/control theorems do not depend on that cross-device combination. The inputs are separated as follows.
+
+\begin{description}
+\item[Excitation-driven spectral degradation.] Measured; motivates exposure age and a monotone useful-attempt sequence $v_j$.
+\item[Reset contrast.] The reported 3.5-fold median linewidth narrowing after above-band reset is measured and sets a representative fresh/degraded contrast.
+\item[Nuclear-spin memory.] The 112(12)-ms hydrogen nuclear-spin echo time is measured in a separate device and is used only as a wall-clock memory envelope.
+\item[Emitter-to-fiber collection.] The value 0.23 is measured in cavity-enhanced T-center interface work and enters only the link-success scenario.
+\item[Reset duration.] This is a scenario axis, including the representative \SI{6}{\micro s} point, and enters through $c=\tau_r/\tau_a$.
+\item[Occupied-reset retention $\mu_r$.] This is an unmeasured axis. The paper predicts thresholds in $\mu_r$; it does not infer a value.
+\item[Detector, fiber, preparation, and Bell-measurement factors.] These are scenario inputs used to map the control law to distance.
+\end{description}
+The recent p-i-n-waveguide experiment reports that above-band illumination resets the local charge environment and narrows the median optical linewidth by a factor of 3.5 across 46 emitters. Nothing in the theorem layer assumes that this reset leaves a nearby stored nuclear state unchanged.
+
+\section{Passive waiting is not rejuvenation}
+Let a policy history be described by exposure index $j$, wall-clock time, and any exogenous synchronization state. Assume an idle interval of duration $\Delta$ changes neither $j$ nor the conditional distribution of future attempt rewards, and idle time earns no reward.
+
+Take any admissible policy containing a voluntary idle interval. Delete that interval and shift every subsequent attempt/reset action earlier by $\Delta$, except where an exogenous resource constraint fixes the original time. The two policies encounter identical exposure states in identical order and obtain the same reward sequence, while every completion time is weakly smaller. Repeating this deletion proves that an optimal rejuvenation policy can be chosen without a wait-to-heal action. Waiting may still be forced by another link or shared resource; it is then a scheduling constraint rather than a repair action.
+
+\section{Single-interface renewal theorem}
+Let $v_1\ge v_2\ge\cdots\ge0$ and define
+\begin{equation}
+ S_K=\sum_{j=1}^{K}v_j,\qquad
+ R_K=\frac{S_K}{(K+c)\tau_a},\qquad c=\tau_r/\tau_a.
+\end{equation}
+Then
+\begin{align}
+ R_{K+1}\ge R_K
+ &\Longleftrightarrow
+ \frac{S_K+v_{K+1}}{K+1+c}\ge\frac{S_K}{K+c}\\
+ &\Longleftrightarrow (K+c)v_{K+1}\ge S_K\\
+ &\Longleftrightarrow \frac{v_{K+1}}{\tau_a}\ge R_K.
+\end{align}
+Define
+\begin{equation}
+ d_K=(K+c)v_{K+1}-S_K.
+\end{equation}
+A direct difference gives
+\begin{equation}
+ d_{K+1}-d_K=(K+c+1)(v_{K+2}-v_{K+1})\le0.
+\end{equation}
+Thus the sign of $R_{K+1}-R_K$ can cross zero at most once. The sequence $R_K$ is unimodal, so the optimal stationary renewal policy is a single finite threshold or the never-reset limit.
+
+\section{Critical reset overhead}
+Assume $v_j\downarrow v_\infty>0$ and
+\begin{equation}
+ B=\sum_{j=1}^{\infty}(v_j-v_\infty)<\infty.
+\end{equation}
+Never resetting has limiting rate $v_\infty/\tau_a$. A finite threshold $K$ beats this rate exactly when
+\begin{align}
+ \frac{S_K}{(K+c)\tau_a}&>\frac{v_\infty}{\tau_a}\\
+ \Longleftrightarrow\quad
+ \sum_{j=1}^{K}(v_j-v_\infty)&>cv_\infty.
+\end{align}
+The partial sums increase to $B$, so a finite threshold is strictly beneficial if and only if
+\begin{equation}
+ \boxed{c<c_{\rm crit}=B/v_\infty.}
+\end{equation}
+At equality no finite threshold strictly improves the limiting rate.
+
+\section{Multiplexed fixed-threshold theorem}
+Consider $m$ identical emitters. Each emitter earns $S_K$ expected useful reward per renewal cycle of $K$ attempts and one reset. One attempt engine executes at most one attempt at a time while resets may run independently on other emitters.
+
+Attempt-engine capacity gives
+\begin{equation}
+ R\le \frac{S_K}{K\tau_a},
+\end{equation}
+and aggregate emitter-renewal capacity gives
+\begin{equation}
+ R\le\frac{mS_K}{K\tau_a+\tau_r}.
+\end{equation}
+A cyclic work-conserving schedule achieves the smaller cut, hence
+\begin{equation}
+ \boxed{R_m(K)=\min\left\{\frac{S_K}{K\tau_a},\frac{mS_K}{K\tau_a+\tau_r}\right\}.}
+\end{equation}
+The attempt engine never starves exactly when one reset can be covered by $K$ attempts on the other $m-1$ emitters,
+\begin{equation}
+ \tau_r\le(m-1)K\tau_a,
+\end{equation}
+or
+\begin{equation}
+ m\ge\left\lceil1+\frac{c}{K}\right\rceil.
+\end{equation}
+If reset itself occupies the serialized attempt engine, multiplexing cannot hide reset time and the expression collapses to $S_K/(K\tau_a+\tau_r)$.
+
+\section{Sequential repeater state space}
+A midpoint repeater operates in two macro-states.
+
+\paragraph{Empty state $E(j)$.}
+No elementary Bell link is stored and the optical interface has exposure index $j$. A failed attempt increments $j$; reset returns to $E(1)$ after time $\tau_r$; success moves to the occupied state for the second leg, optionally after an inter-leg reset.
+
+\paragraph{Occupied state $O(j,a,n_r)$.}
+One elementary Bell link is stored. Here $j$ is exposure index for attempts on the unfinished leg, $a$ is wall-clock storage age, and $n_r$ counts resets applied while occupied. A failed attempt increments $j$ and $a$. An occupied reset maps $j\to1$, $a\to a+\tau_r$, and $n_r\to n_r+1$. A second-link success terminates the cycle if the cutoff has not expired.
+
+The policy class is
+\begin{equation}
+ \pi=(K_{\rm empty},K_{\rm occ},r_{AB},t_{\rm cut}).
+\end{equation}
+It retains the two hardware variables that alter the reset decision: exposure state and occupancy.
+
+\section{Exact finite-cutoff path sum}
+Let $p_j$ be the herald-success probability of attempt $j$ after reset, $q_j=1-p_j$, and $w_j$ a conditional quality/spectral-overlap weight. Under a finite cutoff every cycle consists of a finite attempt/reset path $\omega$. Its probability is the product of the appropriate $p_j$ and $q_j$ factors along the reset-renewed exposure sequence.
+
+For a successful path with occupied storage time $t_\omega$ and $n_r(\omega)$ occupied resets, the stored-state factor is
+\begin{equation}
+ V(\omega)=w_Aw_Be^{-t_\omega/T_2}\mu_r^{n_r(\omega)}.
+\end{equation}
+The exact success probability, quality-weighted reward, and expected cycle time are
+\begin{align}
+ P_{\rm succ}(\pi)&=\sum_{\omega\in\Omega_{\rm succ}(\pi)}P(\omega),\\
+ Q_{\rm succ}(\pi)&=\sum_{\omega\in\Omega_{\rm succ}(\pi)}P(\omega)V(\omega),\\
+ \E T(\pi)&=\sum_{\omega\in\Omega(\pi)}P(\omega)T(\omega).
+\end{align}
+A representative clock-normalized objective is
+\begin{equation}
+ R_Q(\pi)=\frac{Q_{\rm succ}(\pi)}{\E T(\pi)}.
+\end{equation}
+Because $t_{\rm cut}$ is finite, the sums can be evaluated exactly by recursion without a tail truncation.
+
+\section{Dynamic-programming recursion}
+Define $J_E(j,t)$ and $J_O(j,a,n_r,t)$ as remaining expected reward in the empty and occupied states with remaining cutoff budget $t$. Before cutoff, an occupied attempt satisfies schematically
+\begin{equation}
+ J_O(j,a,n_r,t)=p_jR_{\rm term}(j,a,n_r)+q_jJ_O(j+1,a+\tau_a,n_r,t-\tau_a),
+\end{equation}
+unless $j=K_{\rm occ}$, when the failure branch is followed by the reset transition
+\begin{equation}
+ J_O(1,a+\tau_a+\tau_r,n_r+1,t-\tau_a-\tau_r).
+\end{equation}
+The empty-state recursion is analogous but carries no factor $\mu_r$. Terminal reward includes $e^{-a/T_2}\mu_r^{n_r}$. Enumerating a finite grid over $(K_{\rm empty},K_{\rm occ},r_{AB},t_{\rm cut})$ gives the exact optimum within the declared policy class.
+
+\section{Distance-dependent attempt clock}
+For total endpoint separation $L$ and a midpoint station,
+\begin{equation}
+ \tau_a(L)=t_{\rm prep}+\frac{n_gL}{c_0},
+\end{equation}
+where the propagation term accounts for a photon traveling $L/2$ and a classical herald returning $L/2$. Local reset time does not scale with distance, so
+\begin{equation}
+ c(L)=\tau_r/\tau_a(L)
+\end{equation}
+decreases with $L$. This is why phase boundaries become much more sensitive to occupied-reset damage $\mu_r$ than to microsecond-scale changes in $\tau_r$ once propagation dominates.
+
+\section{Interpretation of the three control phases}
+The optimization yields three qualitative policies:
+\begin{enumerate}
+\item \emph{Aggressive occupied reset}: $K_{\rm occ}=1$; the fresh-interface gain exceeds both reset latency and accumulated memory damage.
+\item \emph{Protected occupied reset}: $K_{\rm occ}>1$; rejuvenation remains worthwhile but is throttled to limit repeated factors of $\mu_r$.
+\item \emph{Maintenance only}: any occupied reset costs more stored-state value than it recovers in future attempt quality, while empty-state reset may remain useful.
+\end{enumerate}
+The reported boundaries near $\mu_r\simeq0.997$--$0.999$ for aggressive reset and $0.89$--$0.93$ for no occupied reset are outputs of the cross-device scenario, not measured reset fidelities.
+
+\section{Kill tests}
+\paragraph{No degradation.} If $v_j=v_\infty$ for all $j$, then $B=0$ and any positive-cost reset is useless.
+
+\paragraph{Perfect occupied reset.} If $\mu_r=1$, occupied reset carries only clock cost and the sequential optimum approaches the renewal-only threshold when ordinary memory decoherence is weak.
+
+\paragraph{Destructive occupied reset.} If $\mu_r=0$, any occupied reset destroys the stored contribution and cannot be optimal in a positive-reward policy; empty-stage rejuvenation may remain.
+
+\paragraph{Infinite reset time.} As $c\to\infty$, the critical-overhead theorem forces no reset.
+
+\paragraph{No dark healing.} Inserting passive waiting must never improve reward at fixed exposure sequence. A violation signals that the implementation has accidentally used wall-clock time as a rejuvenation variable.
+
+\section{Reproducibility protocol}
+To reproduce the theorem layer, specify any monotone $v_j$, attempt time $\tau_a$, and reset time $\tau_r$ and evaluate $R_K$ directly. To reproduce the hardware-target envelope:
+\begin{enumerate}
+\item choose the declared exposure-to-attempt-value mapping and reset/degraded contrast from the measured T-center envelope;
+\item specify link-success factors and the distance-dependent herald clock;
+\item use the measured-memory-time scenario for $T_2$ while keeping its cross-device provenance explicit;
+\item sweep $\mu_r\in[0,1]$ independently rather than fitting it;
+\item optimize $(K_{\rm empty},K_{\rm occ},r_{AB},t_{\rm cut})$ by the finite recursion;
+\item record the values of $\mu_r$ at which the optimizer changes qualitative phase.
+\end{enumerate}
+The experiment predicted by the paper is to measure the reset-induced memory channel and place the device on this precomputed phase diagram; the phase diagram does not infer the channel.
+
+\begin{thebibliography}{10}
+\bibitem{Zhang2025} X. Zhang, N. Fiaschi, L. Komza, H. Song, T. Schenkel, and A. Sipahigil, Laser-induced spectral diffusion of T centers in silicon nanophotonic devices, \emph{PRX Quantum} \textbf{6}, 030351 (2025).
+\bibitem{Reset2026} C. Zhang, H. Song, L. Komza, A. M. Day, E. Garcia, D. Witt, M. K. Bhaskar, A. Sipahigil, and E. L. Hu, Resolving and resetting the charge environment of single T-centers in silicon p-i-n waveguides, arXiv:2608.15993 (2026).
+\bibitem{Song2026} H. Song \emph{et al.}, Entanglement of a nuclear spin qubit register in silicon photonics, \emph{Nature Nanotechnology} \textbf{21}, 53--57 (2026).
+\bibitem{Islam2024} F. Islam, C.-M. Lee, S. Harper, M. H. Rahaman, Y. Zhao, N. K. Vij, and E. Waks, Cavity-Enhanced Emission from a Silicon T Center, \emph{Nano Letters} \textbf{24}, 319--325 (2024), doi:10.1021/acs.nanolett.3c04056.
+\bibitem{Inesta2023} A. G. I\~nesta \emph{et al.}, Optimal entanglement distribution policies in homogeneous repeater chains with cutoffs, \emph{npj Quantum Information} \textbf{9}, 46 (2023).
+\end{thebibliography}
+\end{document}
