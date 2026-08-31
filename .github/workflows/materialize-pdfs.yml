@@ -1,0 +1,122 @@
+name: Materialize paper PDFs
+
+on:
+  push:
+    paths:
+      - '.github/workflows/materialize-pdfs.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out archive
+        uses: actions/checkout@v4
+
+      - name: Install TeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y latexmk texlive-latex-extra texlive-fonts-recommended texlive-science texlive-publishers
+
+      - name: Compile papers 01--09
+        shell: bash
+        run: |
+          set -euo pipefail
+          compile() {
+            dir="$1"
+            file="$2"
+            echo "==> $dir/$file"
+            (cd "$dir" && latexmk -pdf -file-line-error -halt-on-error -interaction=nonstopmode "$file")
+          }
+
+          compile 01_high_rate_qldpc_interconnects main.tex
+          compile 01_high_rate_qldpc_interconnects supplement.tex
+          compile 02_2d_hybrid_repeaters main.tex
+          compile 02_2d_hybrid_repeaters supplement.tex
+          compile 03_trapped_ion_photonic_service main.tex
+          compile 03_trapped_ion_photonic_service supplement.tex
+          compile 04_gkp_resource_factories main.tex
+          compile 04_gkp_resource_factories supplement.tex
+          compile 05_reset_aware_spin_photon main.tex
+          compile 05_reset_aware_spin_photon supplement.tex
+          compile 06_stochastic_qldpc_factories main.tex
+          compile 06_stochastic_qldpc_factories supplement.tex
+          compile 07_repair_identifiability main.tex
+          compile 08_predictive_rank_qec main.tex
+          compile 09_covariance_geometry_qec main.tex
+
+      - name: Add canonical arXiv PDF for paper 00
+        run: |
+          set -euo pipefail
+          mkdir -p 00_trapped_ion_geometry
+          curl -L --retry 4 --retry-delay 3 --fail https://arxiv.org/pdf/2608.24770 -o 00_trapped_ion_geometry/main.pdf
+          test -s 00_trapped_ion_geometry/main.pdf
+
+      - name: Clean build byproducts and staging
+        shell: bash
+        run: |
+          set -euo pipefail
+          find 01_high_rate_qldpc_interconnects 02_2d_hybrid_repeaters 03_trapped_ion_photonic_service 04_gkp_resource_factories 05_reset_aware_spin_photon 06_stochastic_qldpc_factories 07_repair_identifiability 08_predictive_rank_qec 09_covariance_geometry_qec \
+            -type f \( -name '*.aux' -o -name '*.log' -o -name '*.out' -o -name '*.fls' -o -name '*.fdb_latexmk' -o -name '*.toc' -o -name '*.bbl' -o -name '*.blg' \) -delete
+          rm -rf .staging
+
+      - name: Write clean index
+        shell: bash
+        run: |
+          cat > README.md <<'EOF'
+          # Ayush Nadiger — quantum papers
+
+          A compact archive of quantum-information, quantum-hardware, and fault-tolerant-architecture manuscripts. Each numbered directory contains a compiled paper PDF; source is included for the current manuscripts, and Papers 01–06 also include standalone supplements and supplement PDFs.
+
+          - `00_trapped_ion_geometry/` — **Geometry-controlled correlated electric-field noise in enclosed ion traps from billiard return spectra** — arXiv:2608.24770.
+          - `01_high_rate_qldpc_interconnects/` — **High-Rate qLDPC Gates over Heralded Interconnects: QEC-Aware Entanglement Service**.
+          - `02_2d_hybrid_repeaters/` — **Correction Exposure and Service Geometry in Sparse Hybrid Quantum Repeater Networks**.
+          - `03_trapped_ion_photonic_service/` — **Fault-Tolerant Service Contracts for Integrated Trapped-Ion Photonic Interconnects**.
+          - `04_gkp_resource_factories/` — **Throughput Is Not Enough: Synchronization and Loss Constraints for GKP-State Factories in High-Rate Photonic Repeaters**.
+          - `05_reset_aware_spin_photon/` — **Occupancy-Aware Reset Control for Sequential Quantum Repeaters with Exposure-Aged Spin–Photon Interfaces**.
+          - `06_stochastic_qldpc_factories/` — **Tanner Frontiers in Stochastic qLDPC Entanglement Factories**.
+          - `07_repair_identifiability/` — **Repair Identifiability and Product-Measurement Complexity of Bond Failures in Graph States**.
+          - `08_predictive_rank_qec/` — **Predictive Rank as a Circuit-Conditioned Memory Witness for Quantum Error-Correction Syndrome Records**.
+          - `09_covariance_geometry_qec/` — **Covariance Geometry of Linearized Quantum Erasure Correction**.
+
+          RA-FEAST and route-optimization work are intentionally not included in this archive.
+          EOF
+
+      - name: Verify archive shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s 00_trapped_ion_geometry/main.pdf
+          for d in \
+            01_high_rate_qldpc_interconnects \
+            02_2d_hybrid_repeaters \
+            03_trapped_ion_photonic_service \
+            04_gkp_resource_factories \
+            05_reset_aware_spin_photon \
+            06_stochastic_qldpc_factories; do
+            test -s "$d/main.tex"
+            test -s "$d/main.pdf"
+            test -s "$d/supplement.tex"
+            test -s "$d/supplement.pdf"
+          done
+          for d in 07_repair_identifiability 08_predictive_rank_qec 09_covariance_geometry_qec; do
+            test -s "$d/main.tex"
+            test -s "$d/main.pdf"
+          done
+          test ! -e .staging
+
+      - name: Commit compiled archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'Nothing to commit.'
+          else
+            git commit -m 'Add compiled PDFs for all quantum papers'
+            git push
+          fi
