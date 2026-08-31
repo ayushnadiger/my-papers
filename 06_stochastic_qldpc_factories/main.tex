@@ -1,0 +1,206 @@
+\documentclass[aps,prx,reprint,superscriptaddress,nofootinbib,longbibliography,floatfix]{revtex4-2}
+\usepackage[T1]{fontenc}\usepackage{amsmath,amssymb,mathtools,amsthm}\usepackage{booktabs,microtype,hyperref}
+\newtheorem{theorem}{Theorem}\newtheorem{proposition}[theorem]{Proposition}\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\begin{document}
+\title{Tanner Frontiers in Stochastic qLDPC Entanglement Factories}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+
+\begin{abstract}
+Constant-overhead Bell-pair distillation with high-rate qLDPC codes is normally described after all $n$ raw Bell pairs of a block are present. A stochastic interconnect creates a different regime: raw pairs arrive at random times, so sparse native stabilizers become physically available before global block closure. We separate this arrival geometry from the controller's measurement policy. If $G$ is the qubit connectivity graph of a declared generating set, coordinate $v$ arrives at $T_v$, and $C_v=\max_{u\in N[v]}T_u$ is its native-neighborhood closure time, the integrated \emph{availability frontier} obeys the exact pathwise identity
+\begin{equation*}
+F_{\rm av}=\int |\partial_G^-S(t)|dt=\sum_v(C_v-T_v).
+\end{equation*}
+A syndrome-extraction policy resolves coordinate $v$ at time $R_v\ge C_v$ and has unresolved-coordinate exposure $F_\pi=\sum_v(R_v-T_v)\ge F_{\rm av}$. Immediate support-complete extraction takes $R_v=C_v$; fill-then-process takes $R_v=T_{\max}$ and has $\E F_\pi=n(H_n-1)/\mu$ under iid addressed exponential arrivals, whereas eager local resolution has $O(n/\mu)$ exposure for bounded-degree qLDPC families. Under a serialized aggregate Poisson source, eager availability exposure is $A_G(\pi)/\Lambda$, where $A_G(\pi)$ is vertex-separation area and the minimum peak is graph pathwidth. Code-connectivity bounds imply extensive peak and $\Omega(n^2/\Lambda)$ exposure for bounded-degree linear-distance families. For $C$ reusable generation ports, the total success hazard is at most $C\mu$, giving the rigorous lower bound $\E F_{\rm av}\ge A_G^*/(C\mu)$; hence any constant-rate family with $A_G^*=\Omega(n^2)$ requires $C=\Omega(n)$ to keep availability exposure per encoded output bounded, even though matching only the fully addressed block-fill timescale requires $\Theta(n/\log n)$ ports. The result is a concurrency theorem for physical syndrome availability, not a logical-error claim.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+High-rate qLDPC codes provide a route to constant-rate quantum memory and constant-overhead network primitives. In particular, high-rate codes can distill noisy raw Bell pairs into encoded Bell resources without the vanishing yield of recurrence-style purification. Once the encoded output rate is constant, a natural systems question moves upstream: what interconnect service is required to feed one distillation block?
+
+The conventional block abstraction assumes all raw pairs are present before syndrome extraction. A heralded interconnect supplies them asynchronously. Because qLDPC checks are sparse, a native generator becomes support-complete as soon as the raw Bell pairs in its support have arrived. This creates a physical availability process before the block is globally complete.
+
+Partial syndrome measurement is not itself new. Berthusen and Gottesman showed that hypergraph-product codes can retain threshold behavior when a sufficiently large subset of generators is measured, and later adaptive-syndrome work uses real-time information to decide which checks to measure. Our question is different: the missing checks are not chosen by a measurement schedule but imposed by stochastic entanglement arrival. We characterize when native checks become \emph{physically available}, how that process depends on raw-entanglement concurrency, and how much extra delay a controller adds if it postpones already available checks.
+
+The distinction matters because two architectures with the same aggregate Bell-pair rate can expose qLDPC locality at parametrically different times. The results below are structural. They do not assume that early measurements improve logical error, and they do not identify check availability with total successful-pair occupancy.
+
+\section{Availability frontier and policy resolution}
+Fix one declared stabilizer generating set and form a qubit connectivity graph $G=(V,E)$: two raw-Bell coordinates are adjacent when they participate together in at least one declared native generator. Let $S(t)\subseteq V$ be the coordinates whose raw Bell pairs have arrived by time $t$. The inward frontier is
+\begin{equation}
+\partial_G^-S=\{v\in S:\exists u\notin S\text{ with }(u,v)\in E\}.
+\end{equation}
+It contains exactly the arrived coordinates whose native neighborhood is not yet complete.
+
+Let $T_v$ be the arrival time of $v$, $N[v]$ its closed neighborhood, and
+\begin{equation}
+C_v=\max_{u\in N[v]}T_u
+\end{equation}
+its support-closure time. Define the integrated physical-availability frontier
+\begin{equation}
+F_{\rm av}=\int_0^\infty |\partial_G^-S(t)|dt.
+\end{equation}
+
+\begin{theorem}[Local-closure identity]
+For every deterministic arrival trajectory,
+\begin{equation}
+\boxed{F_{\rm av}=\sum_{v\in V}(C_v-T_v)
+=\sum_v\left(\max_{u\in N[v]}T_u-T_v\right).}
+\label{eq:closure}
+\end{equation}
+\end{theorem}
+The theorem depends only on arrivals. A controller cannot change $C_v$ by choosing when to measure a check whose support is already present.
+
+To compare extraction policies, introduce a separate resolution time $R_v\ge C_v$: the first time by which the controller has actually resolved the native-check obligations associated with coordinate $v$ under its declared measurement policy. Define
+\begin{equation}
+F_\pi=\sum_v(R_v-T_v).
+\label{eq:policyexp}
+\end{equation}
+Then
+\begin{equation}
+F_\pi=F_{\rm av}+\sum_v(R_v-C_v)\ge F_{\rm av}.
+\end{equation}
+Immediate support-complete extraction has $R_v=C_v$ and therefore $F_\pi=F_{\rm av}$. A fill-then-process policy has $R_v=T_{\max}=\max_uT_u$ for all $v$. This separation repairs an otherwise easy category error: policy delay can increase unresolved exposure, but it cannot change the geometric availability frontier generated by arrivals.
+
+Neither quantity is total physical occupancy. A successful raw Bell half may remain stored after all of its native checks have become available or even measured.
+
+\section{Independent addressed generation}
+Assume $T_v\stackrel{\rm iid}{\sim}\mathrm{Exp}(\mu)$. If $m_v=|N[v]|$, the maximum of $m_v$ iid exponentials has mean $H_{m_v}/\mu$. Equation~\eqref{eq:closure} gives
+\begin{equation}
+\boxed{\E F_{\rm av}=\frac1\mu\sum_v(H_{m_v}-1).}
+\label{eq:harmonic}
+\end{equation}
+For bounded connectivity degree, $m_v=O(1)$ and therefore eager local resolution has
+\begin{equation}
+\E F_{\rm eager}=\E F_{\rm av}=O(n/\mu).
+\end{equation}
+
+For fill-then-process, $R_v=T_{\max}$ and
+\begin{equation}
+F_{\rm batch}=\sum_v(T_{\max}-T_v),
+\end{equation}
+so
+\begin{equation}
+\boxed{\E F_{\rm batch}=\frac{n(H_n-1)}{\mu}
+=\Theta(n\log n/\mu).}
+\end{equation}
+The logarithmic separation is therefore a comparison of one well-defined policy exposure $F_\pi$ under eager versus batch resolution. It is not a claim that batch scheduling changes the arrival-defined graph frontier.
+
+A native check of support size $w_c$ is physically support-complete by time $t$ with probability
+\begin{equation}
+(1-e^{-\mu t})^{w_c}.
+\end{equation}
+Thus bounded-weight checks become available on an $O(1/\mu)$ local timescale even though global block closure pays the maximum-arrival straggler. Whether those early checks should be measured, repeated, or used by a decoder is a separate control problem.
+
+\section{Serialized aggregate input and graph layout}
+Now suppose successful raw Bell pairs arrive through one aggregate Poisson stream of rate $\Lambda$ and are assigned in coordinate order $\pi=(v_1,\ldots,v_n)$. Let $S_j=\{v_1,\ldots,v_j\}$ and
+\begin{equation}
+w_j=|\partial_G^-S_j|,\qquad A_G(\pi)=\sum_{j=0}^{n-1}w_j.
+\end{equation}
+For eager local resolution, the frontier is constant at $w_j$ between successive raw arrivals, whose mean spacing is $1/\Lambda$. Therefore
+\begin{equation}
+\boxed{\E F_{\rm av}=\frac{A_G(\pi)}{\Lambda}.}
+\label{eq:serialarea}
+\end{equation}
+The minimum possible peak $\min_\pi\max_jw_j$ is the vertex-separation number, equal to graph pathwidth up to the conventional additive normalization.
+
+Baspin and Krishna relate code distance to separators and treewidth of an appropriate code-connectivity graph. In the bounded-degree form used here,
+\begin{equation}
+d\le\Delta(\operatorname{tw}(G)+1),
+\end{equation}
+so
+\begin{equation}
+W_G^*\ge d/\Delta-1.
+\end{equation}
+When one coordinate is added to a prefix, existing frontier vertices can leave but only the new coordinate can enter; hence the frontier can increase by at most one. A peak $W$ therefore forces at least triangular area,
+\begin{equation}
+A_G^*\ge\frac{W_G^*(W_G^*+1)}2.
+\end{equation}
+For bounded-degree linear-distance qLDPC families,
+\begin{equation}
+W_G^*=\Omega(n),\qquad A_G^*=\Omega(n^2),
+\end{equation}
+and every serialized source obeys
+\begin{equation}
+\E F_{\rm av}=\Omega(n^2/\Lambda).
+\end{equation}
+This is a physical syndrome-availability obstruction, not a logical-lifetime bound.
+
+\section{Finite reusable ports: a concurrency converse}
+Between one serialized stream and full coordinate addressability lies a bank of $C$ reusable generation ports. Each active port succeeds at rate $\mu$ and can be reassigned after success. Regardless of the assignment policy, the total hazard for the next raw success is at most $C\mu$. Condition on the realized coordinate arrival order. During a prefix with frontier width $w_j$, the expected time to the next success is at least $1/(C\mu)$. Consequently
+\begin{equation}
+\E F_{\rm av}\ge \frac{1}{C\mu}\E\!\left[\sum_j w_j\right]
+\ge\boxed{\frac{A_G^*}{C\mu}}.
+\label{eq:portconverse}
+\end{equation}
+This bound is schedule independent: adaptive port reassignment can choose the order, but it cannot beat the minimum graph-layout area or the aggregate success hazard.
+
+If $k=Rn$ and $A_G^*=\Omega(n^2)$, Eq.~\eqref{eq:portconverse} gives
+\begin{equation}
+\frac{\E F_{\rm av}}{k}=\Omega\!\left(\frac{n}{C\mu}\right).
+\end{equation}
+Keeping availability exposure per encoded output $O(1/\mu)$ therefore requires
+\begin{equation}
+\boxed{C=\Omega(n)}.
+\end{equation}
+Taking $C=\Theta(n)$ is sufficient to recover the fully addressed local-closure scaling for bounded-degree families. The linear-port requirement follows from the extensive-area geometry, not from constant rate alone.
+
+By comparison, a greedy $C$-port factory has global fill time
+\begin{equation}
+\E T_{\rm fill}(n,C)=\frac{n-C}{C\mu}+\frac{H_C}{\mu},\qquad C\le n.
+\end{equation}
+Matching the fully addressed fill scale $H_n/\mu=\Theta(\log n/\mu)$ requires only
+\begin{equation}
+C=\Theta(n/\log n).
+\end{equation}
+Thus completed-block throughput can be matched with parametrically fewer ports than are required to expose an extensive-frontier code's sparse checks online.
+
+\section{Hypergraph-product specialization}
+Distance alone yields only a square-root lower bound for many HGP code families. Their connectivity graphs can nevertheless inherit stronger expansion from classical seeds. If the quantum connectivity graph contains a linear-size bounded-degree subgraph with linear balanced-separator size, then treewidth and pathwidth are both $\Omega(N)$ for quantum block length $N$, and therefore
+\begin{equation}
+A_G^*=\Omega(N^2).
+\end{equation}
+Self-HGP constructions from bounded-degree classical seed families with a uniform expansion/spectral gap provide a natural sufficient regime. This specialization is used only to show that the serialized and finite-port obstruction can be extensive even when quantum distance alone gives a weaker converse.
+
+\section{Finite synthetic evidence}
+To illustrate the theorem-facing scaling without claiming reproduction of a named decoder, we generate synthetic HGP instances from $(3,4)$-regular classical bases:
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+instance & $C_{\rm stream}$ & batch/eager & best-random $W/N$\\
+\midrule
+$[[225,9,4]]$ & 2.844 & 1.757 & 0.949\\
+$[[625,25,6]]$ & 2.917 & 2.063 & 0.957\\
+$[[1225,49,8]]$ & 2.935 & 2.279 & 0.960\\
+\bottomrule
+\end{tabular}
+\end{center}
+Here $C_{\rm stream}=N^{-1}\sum_v(H_{|N[v]|}-1)$ is the normalized eager availability-exposure constant at $\mu=1$. The batch/eager column compares $N(H_N-1)$ with the eager local-closure exposure. The widening ratio is consistent with the logarithmic policy separation. The random-order peaks are heuristic finite connectivity diagnostics, not exact pathwidth values, and the synthetic matrices are not used for threshold or logical-error claims.
+
+\section{Three distinct resources}
+The stochastic factory exposes at least three inequivalent resources:
+\begin{enumerate}
+\item \emph{physical occupancy}: qubit-time of successful raw Bell halves before the encoded resource is consumed;
+\item \emph{availability or unresolved exposure}: how long arrived coordinates wait for native support closure and, under a policy, subsequent resolution; and
+\item \emph{raw-entanglement concurrency}: the number of coordinates that can make independent physical progress.
+\end{enumerate}
+Eager extraction minimizes the policy-delay term $\sum_v(R_v-C_v)$ but does not remove total occupancy. Increasing concurrency reduces the arrival-defined availability term but spends more independently progressable generation hardware. These substitutions must be reported separately.
+
+\section{Decoder boundary and relation to partial-syndrome work}
+Berthusen and Gottesman prove threshold behavior for HGP codes in a model where only a sufficiently large subset of generators is deliberately measured, and later adaptive-syndrome work chooses measurements dynamically using available information. Those results establish that incomplete syndrome can have meaningful fault-tolerant semantics. They do not determine the stochastic service law here: our missing checks arise because their physical supports have not yet arrived.
+
+A full logical test would generate timestamped raw pairs, execute noisy check circuits when supports close or according to a declared delayed policy, refresh checks as later coordinates arrive, and decode the resulting spacetime syndrome with missing-check information. Streaming, batch, and intermediate policies must be compared at matched raw-entanglement resources and physical occupancy.
+
+The present theorem deliberately stops one layer earlier. It quantifies when native syndrome becomes physically available and the concurrency needed to make that availability scale. A future growing-block decoder can determine the logical value of the service without altering the arrival/concurrency laws.
+
+\section{Conclusion}
+Constant-rate Bell-pair distillation does not imply that aggregate raw Bell rate is the only relevant network resource. Sparse qLDPC checks close locally under addressed stochastic generation, while serialized or heavily port-limited generation turns physical syndrome availability into a graph-layout problem. Separating arrival-defined availability from controller-defined measurement delay makes the comparison precise and shows why architectures with equal completed-block throughput can be inequivalent to the QEC consumer.
+
+\begin{thebibliography}{20}
+\bibitem{Ataides2025} J. P. Bonilla Ataides \emph{et al.}, Constant-Overhead Fault-Tolerant Bell-Pair Distillation using High-Rate Codes, \emph{Phys. Rev. Lett.} \textbf{135}, 130804 (2025).
+\bibitem{Baspin2022} N. Baspin and A. Krishna, Connectivity constrains quantum codes, \emph{Quantum} \textbf{6}, 711 (2022).
+\bibitem{Berthusen2024} N. Berthusen and D. Gottesman, Partial Syndrome Measurement for Hypergraph Product Codes, \emph{Quantum} \textbf{8}, 1345 (2024), doi:10.22331/q-2024-05-14-1345.
+\bibitem{Berthusen2025} N. Berthusen, S. J. S. Tan, E. Huang, and D. Gottesman, Adaptive Syndrome Extraction, \emph{PRX Quantum} \textbf{6}, 030307 (2025).
+\end{thebibliography}
+\end{document}
