@@ -1,0 +1,130 @@
+\documentclass[aps,prx,reprint,superscriptaddress,nofootinbib,longbibliography,floatfix]{revtex4-2}
+\usepackage[T1]{fontenc}\usepackage{amsmath,amssymb,mathtools,amsthm,bm}\usepackage{booktabs,microtype,hyperref}
+\newtheorem{theorem}{Theorem}\newtheorem{proposition}[theorem]{Proposition}\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\begin{document}
+\title{Correction Exposure and Service Geometry in Sparse Hybrid Quantum Repeater Networks}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+
+\begin{abstract}
+Sparse error-correcting hardware creates two network-design problems that are easily conflated. If a deployed hybrid repeater may be ignored at zero cost, adding capability cannot worsen the optimized service objective; installed density is then a resource coordinate rather than an intrinsic scalar optimum. If every encountered hybrid is a mandatory encoded interface, additional deployment can shorten correction gaps while simultaneously adding local processing and forcing the three physical components of a repetition-protected connection to reconverge. We develop a theory of this competition for the Type-1/Type-2 REP3 architecture introduced by Haldar, Guha, Towsley, and Rozp\k{e}dek. Physical Pauli bias induces an additive exposure $u=-\log(1-2q)$, while odd-repetition majority decoding maps exposure through a strictly convex logical log-bias damage. This yields exact majorization, checkpoint-insertion, detour, and correction-frequency laws. In two dimensions the code also changes route service: three elementary entanglement-generation components must share an ordered active-checkpoint skeleton. For a fixed bundle we derive the exact readiness distribution from edge multiplicities; for opportunistic route assembly we derive a hybrid-signature collision probability and show that mandatory checkpoint refinement stochastically delays block completion. Registered $13\times13$ reduced-model experiments give a null optional-bypass gap in 1,122 matched central instances but large placement and routing effects; an independent event-driven mandatory-activation campaign exhibits placement-dependent density regimes. The resulting design object is a hardware--placement--routing--semantics frontier, not a universal optimal hybrid density.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+Quantum repeaters extend entanglement distribution by replacing one long lossy channel with shorter elementary links, memories, and local operations. Error correction can suppress accumulated memory and gate faults, but the hardware used for fast optical generation need not be the hardware best suited to storage and encoded processing. Haldar, Guha, Towsley, and Rozp\k{e}dek introduced a hybrid chain architecture in which Type-1 hardware supplies rapid elementary entanglement while sparse hybrid stations additionally expose a Type-2 memory and processing subsystem; their minimal encoded protocol uses the three-qubit repetition code (REP3) and shows that sparse hybridization can outperform homogeneous alternatives under favorable hardware ratios.
+
+A network is not a longer chain. In a chain, placement nearly fixes checkpoint order. In a two-dimensional graph, a controller chooses a physical route, an ordered sequence of active correction checkpoints, and---under optional semantics---whether an encountered capable node is activated at all. REP3 also changes the routing object: the protected connection is carried by three physical entanglement-generating components (EGCs), which may exploit different ordinary routes between correction sites but must reconverge at each encoded interface. Error correction therefore changes both the logical-noise geometry and the set of route bundles that can be served.
+
+Routing under probabilistic entanglement, stored-link age, and hybrid error-management choices have been studied from complementary perspectives. Prior path-selection work shows that the fastest useful route need not be the geometrically shortest one when stochastic generation, prior entanglement, fidelity decay, or multiple paths are included; hybrid error-management studies likewise show that the location and type of fidelity-enhancement resources change network performance. Our narrower question is what changes when sparse \emph{encoded checkpoints themselves} constrain a three-component route bundle. The answer separates a code-side exposure geometry from a network-side service geometry.
+
+Under Selective activation, a new cost-free capable site enlarges the controller's feasible action set and cannot reduce optimum performance. Under Forced activation, a new deployed hybrid imposes an encoded action and common checkpoint, so its marginal effect can be negative. Nonmonotonic density is therefore a protocol-semantic statement, not a universal law that more hardware is harmful.
+
+\section{Hybrid architecture and semantics}
+Let $G=(V,E)$ be the repeater graph and $H\subseteq V$ the deployed hybrid sites. Type-1 hardware performs elementary link generation, physical storage, and ordinary swaps. An activated hybrid additionally transfers the state into the Type-2 subsystem and applies the REP3 encoded primitive. Source and destination are endpoint-capable hybrids.
+
+A protected request uses three physical EGC components. Under \emph{Forced} semantics, every deployed hybrid encountered by a component bundle is an active checkpoint and all three components must share the same ordered hybrid sequence. Avoiding an unwanted checkpoint requires routing around the corresponding vertex. Under \emph{Selective} semantics, the controller chooses an active subset $A\subseteq H$ along a route. A bypassed hybrid remains entirely Type-1: it receives no Type-2 memory or gate advantage and imposes no encoded reconvergence.
+
+\begin{proposition}[Optional-capability monotonicity]
+Let $J(H)$ be the optimum of any service objective over routes and active subsets when unused hybrid capability has zero cost. If $H\subseteq H'$, then $J(H')$ is no worse than $J(H)$.
+\end{proposition}
+The proof is set inclusion: every policy feasible under $H$ remains feasible under $H'$. Thus an interior optimum in \emph{installed} density requires either a deployment charge or mandatory activation.
+
+\section{Correction exposure}
+For a binary Pauli coordinate with flip probability $q<1/2$, define the bias $x=1-2q$ and exposure
+\begin{equation}
+u=-\log x=-\log(1-2q).
+\end{equation}
+Independent channel segments multiply bias and therefore add exposure. For REP3 majority decoding,
+\begin{equation}
+M_3(x)=\frac{3x-x^3}{2},\qquad c_3(u)=-\log M_3(e^{-u}).
+\end{equation}
+More generally, for the odd repetition code $n=2r+1$, the majority-bias transfer function yields a strictly convex logical log-bias damage $c_n(u)$ on $u>0$.
+
+\begin{theorem}[Correction-gap majorization]
+For fixed total exposure and a fixed number of correction segments, aggregate odd-repetition logical log-bias damage is strictly Schur-convex in the segment-exposure vector. The most balanced feasible exposure partition is uniquely optimal up to permutation.
+\end{theorem}
+
+This result makes the full correction-gap vector, not hybrid count or mean spacing, the code-faithful design object. For one gap of exposure $u$, define the midpoint splitting gain
+\begin{equation}
+S_n(u)=c_n(u)-2c_n(u/2).
+\end{equation}
+A charged midpoint checkpoint is favorable exactly when $S_n(u)>\eta$, where $\eta$ is its declared log-bias-damage charge. For REP3, $S_3(u)$ increases monotonically from zero and approaches
+\begin{equation}
+\eta_c=\log(3/2)
+\end{equation}
+as $u\to\infty$. Hence zero-cost insertion is beneficial for every positive gap; for $0<\eta<\eta_c$ there is a unique finite exposure threshold above which insertion is beneficial; and for $\eta\ge\eta_c$ no finite gap gives a strict net benefit. The same splitting gain supplies a detour budget: added route exposure is worthwhile only while it is smaller than the coding benefit obtained by rebalancing the correction partition.
+
+The low-exposure hardware elasticity follows from differentiating $c_n(\tau/T_2)$. If $n=2r+1$, the leverage of improving $T_2$ approaches $r+1$ in the protected low-exposure regime and tends to one at high exposure. Error correction therefore changes the value of a physical memory improvement rather than merely multiplying a fixed error rate.
+
+\section{Three-EGC readiness and overlap}
+Suppose a fixed three-component bundle uses physical edge $e$ with multiplicity $d_e\in\{1,2,3\}$. Each edge exposes three independent elementary-generation channels attempted once per slot with success probability $p_\ell$. Let
+\begin{equation}
+x_t=1-(1-p_\ell)^t,
+\end{equation}
+and
+\begin{equation}
+B_{3,d}(x)=\sum_{j=d}^{3}{3\choose j}x^j(1-x)^{3-j}.
+\end{equation}
+
+\begin{theorem}[Fixed-bundle readiness]
+For independent elementary-link attempts,
+\begin{equation}
+\Prob(T_{\rm EGC}\le t)=\prod_{e\in E_{\rm bundle}}B_{3,d_e}(x_t),
+\end{equation}
+and
+\begin{equation}
+\E T_{\rm EGC}=\sum_{t\ge0}\left[1-\prod_e B_{3,d_e}(x_t)\right].
+\end{equation}
+At fixed path-length accounting, splitting rail demand from multiplicity $3$ to $2+1$ and then to $1+1+1$ across independent edges improves readiness in stochastic order.
+\end{theorem}
+
+This is a genuinely two-dimensional cost. A chain offers no transverse path diversity; in a graph, disjointness can improve readiness but usually costs stretch.
+
+A second service effect appears when routes are assembled opportunistically before the common checkpoint skeleton is fixed. For physical path $P$, let $\sigma_H(P)$ be the ordered sequence of mandatory hybrids encountered and let $p_\sigma$ be the probability of signature $\sigma$ in the route ensemble. Three independently sampled paths are compatible with one REP3 block with probability
+\begin{equation}
+\Phi_3(H)=\sum_\sigma p_\sigma^3.
+\end{equation}
+Adding a mandatory hybrid refines the signature partition and cannot increase $\Phi_3$. Under a marked-Poisson path-arrival process of total rate $\lambda$, the first time any signature accumulates three compatible paths obeys
+\begin{equation}
+\Prob(T_3>t)=e^{-\lambda t}\prod_\sigma\left(1+\lambda p_\sigma t+\frac{(\lambda p_\sigma t)^2}{2}\right).
+\end{equation}
+For $m$ equally likely signatures, $\E T_3$ scales as $\Phi_3^{-1/3}/\lambda$. A chain has one signature and $\Phi_3=1$ for every spacing; route-space fragmentation is therefore absent in one dimension.
+
+\section{Registered finite evidence}
+We use two numerical generations for distinct questions and do not pool their absolute rates. The theorem-facing reduced model is registered to the central Haldar hardware point with $p_\ell=0.01$, Type-1 coherence $T_2^{(1)}=500$ link intervals, a tenfold Type-2 coherence improvement, Type-1 two-qubit error $10^{-3}$, a tenfold Type-2 gate improvement, zero interface error, and zero added local-operation duration.
+
+At this point, direct circuit bookkeeping gives a negative net gate activation charge in the protected Pauli coordinate. Consequently, Forced and Selective optimization coincide in 1,122 matched $13\times13$ central instances. This null result is essential: if bypass is free and the local model makes activation beneficial, optional semantics should not manufacture a density penalty. Placement and route choice nevertheless matter strongly. With 12 internal hybrids, a demand-aligned deployment reaches Bell fidelity 0.9900 versus random-placement median 0.5472 in the registered reduced model. At 48 random hybrids, correction-aware routing improves median fidelity by 0.2274 over the geometric shortest-row baseline.
+
+A separate repaired event-driven campaign fixes mandatory encoded actions and includes renewal timing. Under moderate memory stress, regular placement peaks at internal hybrid density $n_h=0.20$ with secret-throughput proxy 0.03425, edge-aligned placement peaks near $n_h=0.80$ at 0.03386, and random placement reaches 0.03365 at full hybridization. Under more severe memory stress the global optimum moves to full hybridization at 0.03178. A zero-local-delay $2\times2$ control isolates the service mechanism: one mandatory interior hybrid can force route concentration to unity, increase the REP3 renewal cycle from 5.63 to 10.96 boundaries, and reduce the proxy from 0.141 to 0.0747 even though it creates an additional correction opportunity.
+
+These values establish behavior of the declared simulators, not universal density constants. Their role is to confirm the two competing mechanisms predicted by the theory.
+
+\section{Placement, routing, and scaling}
+The analytic structure suggests a service-aware route score
+\begin{equation}
+C(\pi)=C_{\rm gap}(\pi)+\alpha C_{\rm EGC}(\pi)+\beta C_{\rm stretch}(\pi),
+\end{equation}
+where the first term evaluates the correction-exposure partition, the second charges overlap/readiness or signature fragmentation, and the third prevents arbitrarily long detours. Small graphs admit an exact bundle oracle for benchmarking heuristic policies.
+
+Spatially, $k$ correction sites in a $d$-dimensional region of volume $N$ cannot keep every point within distance smaller than order $(N/k)^{1/d}$. Thus the natural capability-density scale associated with a correction length $g$ is $\rho=\Theta(g^{-d})$ when routing can exploit the ambient dimension. One-dimensional random placement retains a logarithmic rare-gap penalty; in favorable topologies and demand geometries, path diversity in $d\ge2$ can route around holes and approach the geometric covering scale for point-to-point service. These are scaling guides about access to capability, not predictions of a particular finite-density secret-key-rate maximum.
+
+\section{Discussion and limitations}
+The paper's main design result is conditional and therefore more useful than a generic density recommendation. Free optional capability is monotone. Forced or explicitly charged correction can be nonmonotone because the marginal coding benefit of shortening gaps competes with local-operation cost and three-component service geometry. Two deployments with the same density can lie far apart on the resulting service frontier because their correction gaps and route overlap differ.
+
+REP3 is a minimal analytic architecture, not a universal QEC model. It protects one Pauli sector and the registered reduced experiments omit measurement faults, interface errors, and nonzero local-operation time. A circuit-level fault-tolerant code may change the activation charge and add syndrome-service constraints. Likewise, a complete multi-demand network performance study would additionally charge finite channel capacity, memory aging during reconvergence, contention, and an end-to-end secret-key or encoded-throughput objective. Those extensions determine where a physical implementation lies on the frontier; they do not alter the exact optional-capability, exposure-majorization, or fixed-bundle readiness statements proved here.
+
+\section{Conclusion}
+Sparse error correction in a network is not a density-only problem. The code assigns a convex cost to the vector of uncorrected exposures, while the network determines how expensive it is for three protected components to realize a favorable checkpoint sequence. Separating optional capability from mandatory action resolves the apparent contradiction between monotone and nonmonotone density studies and produces a more useful engineering object: a hardware--placement--routing--semantics frontier.
+
+\begin{thebibliography}{20}
+\bibitem{Haldar2025} S. Haldar, S. Guha, D. Towsley, and F. Rozp\k{e}dek, Hybrid Repeaters with Encoding for Long Distance Entanglement Distribution, in \emph{2025 IEEE International Conference on Quantum Computing and Engineering (QCE)}, pp. 1141--1147 (2025), doi:10.1109/QCE65121.2025.00128.
+\bibitem{Pathumsoot2023} P. Pathumsoot \emph{et al.}, Hybrid Error-Management Strategies in Quantum Repeater Networks, arXiv:2303.10295 (2023).
+\bibitem{Fayyaz2025} A. Fayyaz, P. Krishnamurthy, K. P. Seshadreesan, D. Tipper, and A. Babay, On Selecting Paths for End-to-End Entanglement Creation in Quantum Networks, arXiv:2505.02283 (2025).
+\bibitem{Briegel1998} H.-J. Briegel, W. D\"ur, J. I. Cirac, and P. Zoller, Quantum repeaters: The role of imperfect local operations in quantum communication, \emph{Phys. Rev. Lett.} \textbf{81}, 5932 (1998).
+\bibitem{Azuma2023} K. Azuma \emph{et al.}, Quantum repeaters: From quantum networks to the quantum internet, \emph{Rev. Mod. Phys.} \textbf{95}, 045006 (2023).
+\bibitem{Jiang2009} L. Jiang \emph{et al.}, Quantum repeater with encoding, \emph{Phys. Rev. A} \textbf{79}, 032325 (2009).
+\end{thebibliography}
+\end{document}
