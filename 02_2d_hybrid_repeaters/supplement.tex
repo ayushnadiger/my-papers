@@ -1,0 +1,252 @@
+\documentclass[aps,prx,preprint,superscriptaddress,nofootinbib,longbibliography]{revtex4-2}
+\usepackage[T1]{fontenc}\usepackage{amsmath,amssymb,mathtools,amsthm,bm}\usepackage{booktabs,microtype,hyperref}
+\newtheorem{theorem}{Theorem}\newtheorem{proposition}[theorem]{Proposition}\newtheorem{lemma}[theorem]{Lemma}\newtheorem{corollary}[theorem]{Corollary}\newtheorem{definition}[theorem]{Definition}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\begin{document}
+\title{Supplemental Material for ``Correction Exposure and Service Geometry in Sparse Hybrid Quantum Repeater Networks''}
+\author{Ayush Nadiger}\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}\maketitle
+
+\section{Odd-repetition transfer law and strict convexity}
+Let $n=2r+1$ and let $q=(1-x)/2$ be the physical bit-flip probability written in the bias coordinate $x\in[0,1]$. Majority decoding fails when at least $r+1$ of the $2r+1$ bits flip. Define the logical bias $\lambda_n(x)=1-2q_{L,n}(x)$ and the exposure variable $u=-\log x$.
+
+\begin{theorem}[Exact odd-repetition transfer]
+With
+\begin{equation}
+K_r=\frac{(2r+1)\binom{2r}{r}}{4^r},
+\end{equation}
+one has
+\begin{equation}
+\lambda_{2r+1}(x)=K_r\int_0^x(1-t^2)^r\,dt.
+\end{equation}
+For
+\begin{equation}
+c_{2r+1}(u)=-\log\lambda_{2r+1}(e^{-u}),
+\end{equation}
+$c_{2r+1}''(u)>0$ for every $u>0$.
+\end{theorem}
+\begin{proof}
+Differentiate the majority-vote binomial tail with respect to $x$. All noncentral terms telescope, leaving
+\begin{equation}
+\lambda'_{2r+1}(x)=K_r(1-x^2)^r,
+\end{equation}
+with $\lambda_{2r+1}(0)=0$, which yields the integral formula. Set
+\begin{equation}
+f(x)=(1-x^2)^r,\qquad F(x)=\int_0^x f(t)dt.
+\end{equation}
+The normalization $K_r$ cancels from logarithmic derivatives. With $x=e^{-u}$,
+\begin{equation}
+c_n'(u)=h(x),\qquad h(x)=\frac{x f(x)}{F(x)},\qquad c_n''(u)=-x h'(x).
+\end{equation}
+It is enough to show $h'(x)<0$ for $0<x<1$. Direct differentiation reduces the sign to positivity of
+\begin{equation}
+G(x)=x(1-x^2)^{r+1}-\bigl[1-(2r+1)x^2\bigr]F(x).
+\end{equation}
+Now $G(0)=0$ and
+\begin{equation}
+G'(x)=2x\bigl[(2r+1)F(x)-x f(x)\bigr].
+\end{equation}
+Because $f$ is strictly decreasing on $(0,1)$,
+\begin{equation}
+F(x)=\int_0^x f(t)dt>x f(x).
+\end{equation}
+Hence $(2r+1)F(x)-xf(x)>0$, so $G'(x)>0$, $G(x)>0$, $h'(x)<0$, and $c_n''(u)>0$.
+\end{proof}
+
+For REP3,
+\begin{align}
+\lambda_3(e^{-u})&=\frac{3e^{-u}-e^{-3u}}{2},\\
+c_3(u)&=u+\log2-\log(3-e^{-2u}),\\
+c_3''(u)&=\frac{12e^{2u}}{(3e^{2u}-1)^2}>0.
+\end{align}
+The small- and large-exposure limits are
+\begin{align}
+c_3(u)&=\frac32u^2+O(u^3),\\
+c_3(u)&=u-\log(3/2)+o(1).
+\end{align}
+
+\section{Majorization, midpoint insertion, and correction charge}
+Strict convexity gives Jensen's inequality, and Karamata strengthens it to the full majorization order.
+
+\begin{corollary}[Strict exposure majorization]
+For exposure vectors $\bm u$ and $\bm v$ with equal dimension and equal total exposure, if $\bm u$ majorizes $\bm v$, then
+\begin{equation}
+\sum_i c_n(u_i)\ge\sum_i c_n(v_i),
+\end{equation}
+with equality only for a permutation when all entries lie in the strictly convex domain.
+\end{corollary}
+
+For one gap of total exposure $U$, inserting a checkpoint at exposure coordinate $x\in(0,U)$ changes protected damage by
+\begin{equation}
+\Delta_n(U,x;\eta)=c_n(U)-c_n(x)-c_n(U-x)-\eta,
+\end{equation}
+where $\eta$ is the declared checkpoint charge in log-bias-damage units.
+
+\begin{proposition}[Midpoint insertion]
+For fixed $U$ and $\eta$, the unique maximizer of $\Delta_n(U,x;\eta)$ is $x=U/2$.
+\end{proposition}
+\begin{proof}
+Differentiate:
+\begin{equation}
+\partial_x\Delta_n=-c_n'(x)+c_n'(U-x).
+\end{equation}
+Strictly increasing $c_n'$ gives a unique zero at $x=U/2$, with positive derivative to the left and negative derivative to the right.
+\end{proof}
+
+Define the midpoint splitting gain
+\begin{equation}
+S_n(U)=c_n(U)-2c_n(U/2).
+\end{equation}
+Strict convexity gives
+\begin{equation}
+S_n'(U)=c_n'(U)-c_n'(U/2)>0\qquad(U>0),
+\end{equation}
+so $S_n$ rises strictly from $S_n(0)=0$. Since $\lambda_{2r+1}(x)=K_rx+o(x)$ as $x\to0$, one has $c_n(U)=U-\log K_r+o(1)$ as $U\to\infty$, and therefore
+\begin{equation}
+\lim_{U\to\infty}S_n(U)=\eta_c(n)=\log K_r.
+\end{equation}
+Thus zero-cost midpoint insertion strictly improves every positive gap; for $0<\eta<\eta_c(n)$ there is a unique finite activation threshold $U_\eta$ and insertion is favorable exactly for $U>U_\eta$; for $\eta\ge\eta_c(n)$ no finite gap gives strict net benefit. For REP3, $\eta_c=\log(3/2)$.
+
+For a homogeneous total exposure $U$ split into $m$ equal corrected segments,
+\begin{equation}
+D_m(U)=m c_n(U/m)+(m-1)\eta.
+\end{equation}
+Treating $m$ continuously and writing $u=U/m$, stationarity gives
+\begin{equation}
+u c_n'(u)-c_n(u)=\eta.
+\end{equation}
+The left-hand side has derivative $u c_n''(u)>0$, rises from zero, and approaches $\log K_r$, producing the same three correction-charge regimes.
+
+\section{Hardware elasticity}
+For memory exposure $u=\tau/T_2$ define
+\begin{equation}
+\Lambda_n(u)=\frac{u c_n'(u)}{c_n(u)}.
+\end{equation}
+Then
+\begin{equation}
+\frac{\partial\log c_n(\tau/T_2)}{\partial\log T_2}=-\Lambda_n(u).
+\end{equation}
+Since a length-$2r+1$ majority decoder first fails at order $q^{r+1}$ and $q=u/2+O(u^2)$,
+\begin{equation}
+c_n(u)=\Theta(u^{r+1})
+\end{equation}
+as $u\to0$, implying $\Lambda_n(u)\to r+1$. At high exposure the logical channel returns to first-order bias decay and $\Lambda_n(u)\to1$. The elasticity is a code-side local sensitivity, not a direct secret-key-rate derivative.
+
+\section{Selective capability monotonicity}
+Let $H$ be the installed hybrid-capable set and let $\Pi(H)$ denote the feasible set of routes and activation decisions under Selective semantics.
+
+\begin{theorem}[Optional capability is monotone]
+If $H\subseteq H'$ and unused installed capability has zero objective charge, then for any maximized service objective $J$,
+\begin{equation}
+J^\star(H')\ge J^\star(H).
+\end{equation}
+\end{theorem}
+\begin{proof}
+Every policy feasible under $H$ remains feasible under $H'$ by never activating sites in $H'\setminus H$. Thus $\Pi(H)\subseteq\Pi(H')$, and maximization over the larger feasible set cannot reduce the optimum.
+\end{proof}
+This theorem is a semantic audit. If a simulator reports worse \emph{optimized} performance after adding free optional capability, the route/activation constraints or optimizer must be checked before interpreting the result physically.
+
+\section{Exact fixed-bundle three-EGC readiness}
+For a fixed three-rail bundle, let $d_e\in\{1,2,3\}$ be the number of rails using geometric edge $e$. Each edge exposes three independent elementary-generation channels with per-slot success probability $q$. By slot $t$, one channel has succeeded with probability
+\begin{equation}
+x_t=1-(1-q)^t.
+\end{equation}
+Define
+\begin{equation}
+B_{3,d}(x)=\sum_{j=d}^{3}\binom3j x^j(1-x)^{3-j}.
+\end{equation}
+
+\begin{theorem}[Three-EGC readiness]
+For independent edge processes,
+\begin{equation}
+\Prob(T_{\rm EGC}\le t)=\prod_{e\in E_{\rm bundle}}B_{3,d_e}(x_t),
+\end{equation}
+and
+\begin{equation}
+\E T_{\rm EGC}=\sum_{t\ge0}\left[1-\prod_eB_{3,d_e}(x_t)\right].
+\end{equation}
+\end{theorem}
+\begin{proof}
+The number of successful local channels on edge $e$ by time $t$ is $\mathrm{Binomial}(3,x_t)$. Edge $e$ can support its bundle multiplicity exactly when this count is at least $d_e$, giving $B_{3,d_e}(x_t)$. Physical-edge independence gives the product CDF. The mean follows from the tail-sum identity for nonnegative integer-valued completion time.
+\end{proof}
+
+The REP3 unfolding inequalities are explicit polynomials:
+\begin{align}
+B_{3,1}(x)^2-B_{3,2}(x)&=x^2(1-x)^2(x^2-4x+6)\ge0,\\
+B_{3,2}(x)B_{3,1}(x)-B_{3,3}(x)&=x^3(1-x)(2x^2-7x+8)\ge0.
+\end{align}
+The residual quadratics are positive on $x\in[0,1]$. Therefore moving multiplicity $3$ from one edge to independent demands $2+1$, and then to $1+1+1$, improves the readiness CDF pointwise when geometric stretch is accounted for separately.
+
+\section{Cut bottlenecks}
+Every complete REP3 segment crossing a cut with $c$ usable independent edges must allocate total multiplicity three across at most $\min(3,c)$ edges. Repeatedly balancing any allocation $(u,v)$ with $u\ge v+2$ increases the product of binomial-tail factors by the log-concavity of binomial upper tails in their required multiplicity. Hence the best cut-only readiness CDF is
+\begin{equation}
+U_{3,c}(x)=
+\begin{cases}
+B_{3,3}(x),&c=1,\\
+B_{3,2}(x)B_{3,1}(x),&c=2,\\
+B_{3,1}(x)^3,&c\ge3.
+\end{cases}
+\end{equation}
+A bridge therefore imposes an irreducible three-rail synchronization tax. This is a cut-only lower bound on completion time, not an SKR bound because detour and downstream timing remain outside it.
+
+\section{Mandatory route signatures}
+The fixed-bundle theorem conditions on a chosen three-rail route bundle. A separate, controller-dependent model applies when candidate physical rails arrive before the common checkpoint skeleton is committed.
+
+\begin{definition}[Mandatory hybrid signature]
+For a physical path $P$ and deployed hybrid set $H$, $\sigma_H(P)$ is the ordered sequence of mandatory hybrids encountered by $P$, terminals included. If $P$ is sampled from a declared path distribution, let $p_\sigma=\Prob[\sigma_H(P)=\sigma]$.
+\end{definition}
+
+\begin{proposition}[Route-signature collision]
+For $q$ independent candidate rails,
+\begin{equation}
+\Phi_q(H)=\Prob(\text{all }q\text{ signatures agree})=\sum_\sigma p_\sigma^q.
+\end{equation}
+Refining the signature partition by adding a mandatory hybrid cannot increase $\Phi_q$.
+\end{proposition}
+\begin{proof}
+Condition on the common signature. If a class of mass $p$ is refined into child masses $p_1,\ldots,p_m$ with $\sum_jp_j=p$, then $\sum_jp_j^q\le(\sum_jp_j)^q=p^q$ for integer $q\ge1$.
+\end{proof}
+
+\begin{theorem}[First compatible block under marked-Poisson arrivals]
+Suppose candidate rails arrive as a Poisson process of total rate $\lambda$ and receive independent signature marks with probabilities $p_\sigma$. Let $T_q$ be the first time any signature class accumulates $q$ rails. Then
+\begin{equation}
+\Prob(T_q>t)=e^{-\lambda t}\prod_\sigma\left[\sum_{j=0}^{q-1}\frac{(\lambda p_\sigma t)^j}{j!}\right].
+\end{equation}
+Refining the signature partition delays $T_q$ pathwise under the natural coupling.
+\end{theorem}
+\begin{proof}
+Poisson thinning makes class counts independent Poisson random variables of means $\lambda p_\sigma t$. The event $T_q>t$ is exactly that every class count is less than $q$, giving the product. Under partition refinement each coarse count is the sum of its child counts; whenever a child reaches $q$, its parent has already reached at least $q$, proving pathwise delay.
+\end{proof}
+For $m$ equally likely signatures,
+\begin{equation}
+\frac{\lambda T_q}{m^{(q-1)/q}}\Rightarrow X_q,
+\qquad \Prob(X_q>x)=e^{-x^q/q!},
+\end{equation}
+so
+\begin{equation}
+\E T_q\sim\frac{(q!)^{1/q}\Gamma(1+1/q)}{\lambda}\Phi_q^{-1/q}.
+\end{equation}
+For REP3 the coefficient is $6^{1/3}\Gamma(4/3)\simeq1.62265$. The complete finite-time law depends on the full mass spectrum $\{p_\sigma\}$; $\Phi_3$ is an exact compatibility moment, not a sufficient state variable.
+
+\section{Matched-gap separation witness}
+To show that correction geometry and signature geometry are independent summaries, enumerate the 70 monotone shortest paths from $(0,0)$ to $(4,4)$ on the $5\times5$ square grid. There exist two four-hybrid deployments for which the complete route-level correction-gap histogram is identical: 35 paths have gap vector $(1,2,5)$ and 35 have $(1,7)$ in both deployments. Yet the signature-class masses differ. One deployment has ranked class counts $(20,20,15,10,5)$ and the other $(25,20,10,10,5)$, yielding
+\begin{align}
+\Phi_3^{(A)}&=0.05977, & \E T_3^{(A)}&=6.087/\lambda,\\
+\Phi_3^{(B)}&=0.07507, & \E T_3^{(B)}&=5.855/\lambda.
+\end{align}
+Thus no statistic of correction gaps alone determines opportunistic three-rail reconvergence.
+
+\section{Simulation provenance and evidence separation}
+The manuscript intentionally uses multiple numerical generations for different claims.
+\begin{enumerate}
+\item The \textbf{registered reduced model} is a theorem-facing fidelity model calibrated to the Haldar--Guha--Towsley--Rozp\k{e}dek Type-1/Type-2 REP3 architecture. At the central point it uses $p_\ell=0.01$, $T_2^{(1)}=500$ nearest-neighbor heralding intervals, a tenfold Type-2 coherence improvement, Type-1 two-qubit error $10^{-3}$, a tenfold Type-2 gate improvement, zero interface error, and zero added local-operation duration. The 1,122 matched Forced/Selective instances are a semantic null control inside this generation.
+\item The \textbf{event-driven density campaign} includes mandatory encoded actions and renewal timing and is used only to exhibit placement-dependent density regimes. Its absolute rate is not pooled with the reduced model.
+\item The \textbf{small mechanism controls} isolate reconvergence/readiness changes at matched local conditions; they support the sign of the service mechanism, not a universal network optimum.
+\item The \textbf{route-signature model} is a complementary opportunistic-assembly abstraction, not part of the fixed-bundle simulator. It is used for exact controller-dependent reconvergence laws and is kept separate from the reported event-driven rate values.
+\end{enumerate}
+The evidence hierarchy is therefore theorem $\rightarrow$ controlled mechanism $\rightarrow$ simulator-specific finite behavior. No simulator-specific density maximum is elevated into a topology-independent theorem.
+
+\begin{thebibliography}{10}
+\bibitem{Haldar2025} S. Haldar, S. Guha, D. Towsley, and F. Rozp\k{e}dek, Hybrid Repeaters with Encoding for Long Distance Entanglement Distribution, in \emph{2025 IEEE International Conference on Quantum Computing and Engineering (QCE)}, 1141--1147 (2025), doi:10.1109/QCE65121.2025.00128.
+\end{thebibliography}
+\end{document}
