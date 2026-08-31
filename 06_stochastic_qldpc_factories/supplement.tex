@@ -1,0 +1,211 @@
+\documentclass[aps,prx,preprint,superscriptaddress,nofootinbib,longbibliography]{revtex4-2}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,mathtools,amsthm,booktabs,microtype,hyperref}
+\newtheorem{theorem}{Theorem}\newtheorem{proposition}[theorem]{Proposition}\newtheorem{lemma}[theorem]{Lemma}\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}\newcommand{\pw}{\operatorname{pw}}\newcommand{\tw}{\operatorname{tw}}
+\begin{document}
+\title{Supplemental Material for ``Tanner Frontiers in Stochastic qLDPC Entanglement Factories''}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+\maketitle
+
+\section{Native-check graph and two exposure notions}
+Fix one declared stabilizer generating set. Its qubit connectivity graph is $G=(V,E)$ with one vertex per raw-Bell coordinate and an edge $(u,v)$ whenever at least one native generator contains both coordinates. The graph depends on the chosen native generating set; no optimization over equivalent generator bases is implied.
+
+For an arrived set $S\subseteq V$, define the inward availability frontier
+\begin{equation}
+\partial_G^-S=\{v\in S:N(v)\cap(V\setminus S)\neq\varnothing\}.
+\end{equation}
+This set is determined entirely by which raw coordinates have arrived. A controller can delay a measurement after its support is complete, but that delay does not put the coordinate back on the geometric arrival frontier.
+
+Let $T_v$ be the raw-pair arrival time of coordinate $v$ and
+\begin{equation}
+C_v=\max_{u\in N[v]}T_u
+\end{equation}
+its native-neighborhood closure time. A declared syndrome-extraction policy assigns a resolution time $R_v\ge C_v$. We use
+\begin{align}
+F_{\rm av}&=\sum_v(C_v-T_v),\\
+F_\pi&=\sum_v(R_v-T_v)
+      =F_{\rm av}+\sum_v(R_v-C_v).
+\end{align}
+Thus $F_{\rm av}$ is physical support-availability exposure and $F_\pi$ is policy-dependent unresolved-coordinate exposure. Immediate support-complete extraction has $F_\pi=F_{\rm av}$; fill-then-process sets $R_v=T_{\max}$.
+
+\section{Proof of the local-closure identity}
+The indicator that coordinate $v$ lies on the arrival-defined frontier at time $t$ is
+\begin{equation}
+I_v(t)=\mathbf 1[T_v\le t<C_v].
+\end{equation}
+Therefore
+\begin{align}
+\int_0^\infty|\partial_G^-S(t)|dt
+&=\int_0^\infty\sum_v I_v(t)dt\\
+&=\sum_v\int_0^\infty I_v(t)dt\\
+&=\boxed{\sum_v(C_v-T_v)}\\
+&=\boxed{\sum_v\left(\max_{u\in N[v]}T_u-T_v\right)}.
+\end{align}
+The identity is pathwise and requires neither stochastic independence nor continuous arrival times.
+
+\section{Independent exponential arrivals}
+Suppose $T_v\stackrel{\rm iid}{\sim}\mathrm{Exp}(\mu)$. For $m$ iid rate-$\mu$ exponentials, the maximum has expectation $H_m/\mu$. With $m_v=|N[v]|$,
+\begin{equation}
+\boxed{\E F_{\rm av}=\frac1\mu\sum_v(H_{m_v}-1).}
+\end{equation}
+If connectivity degree is bounded by $\Delta$, then $m_v\le\Delta+1$ and
+\begin{equation}
+\E F_{\rm eager}=\E F_{\rm av}\le\frac{n(H_{\Delta+1}-1)}{\mu}=O(n/\mu).
+\end{equation}
+
+For fill-then-process, $R_v=T_{\max}=\max_uT_u$. Hence
+\begin{equation}
+F_{\rm batch}=\sum_v(T_{\max}-T_v)
+\end{equation}
+and
+\begin{equation}
+\boxed{\E F_{\rm batch}=\frac{n(H_n-1)}{\mu}}.
+\end{equation}
+The logarithmic eager-versus-batch separation is therefore a comparison of the same policy-exposure functional $F_\pi$ under two resolution policies. It is not a claim that delaying measurement changes $F_{\rm av}$.
+
+\section{Serialized arrivals and vertex-separation area}
+Suppose raw successes arrive as a Poisson process of aggregate rate $\Lambda$ and are assigned in deterministic order $\pi=(v_1,\ldots,v_n)$. Define
+\begin{equation}
+S_j=\{v_1,\ldots,v_j\},\qquad w_j=|\partial_G^-S_j|,
+\end{equation}
+and
+\begin{equation}
+A_G(\pi)=\sum_{j=0}^{n-1}w_j.
+\end{equation}
+Under immediate local resolution, between the $j$th and $(j+1)$st arrivals the availability frontier is constant at $w_j$. The interarrival interval has mean $1/\Lambda$, so
+\begin{equation}
+\boxed{\E F_{\rm av}=A_G(\pi)/\Lambda.}
+\end{equation}
+The minimum over orders of $\max_jw_j$ is the vertex-separation number, equal to graph pathwidth up to the conventional additive normalization.
+
+\section{Peak-to-area inequality}
+\begin{lemma}
+When one vertex is added to a prefix, the inward frontier can increase by at most one.
+\end{lemma}
+\begin{proof}
+Existing prefix vertices can only lose outside neighbors as the complement shrinks; none can newly enter the frontier. The newly added vertex is the only possible new frontier member. Thus $w_{j+1}\le w_j+1$.
+\end{proof}
+If an ordering first reaches peak $W$, it must previously pass through levels $1,2,\ldots,W$. Hence
+\begin{equation}
+\boxed{A_G(\pi)\ge\frac{W(W+1)}2.}
+\end{equation}
+No bound on the rate of subsequent decreases is required.
+
+\section{Distance/connectivity converse}
+Baspin and Krishna give, in the bounded-degree form used here,
+\begin{equation}
+d\le\Delta(\tw(G)+1).
+\end{equation}
+Since $\pw(G)\ge\tw(G)$,
+\begin{equation}
+W_G^*\ge d/\Delta-1.
+\end{equation}
+Combining with the peak-to-area inequality yields
+\begin{equation}
+A_G^*\ge\frac12\left(\frac d\Delta-1\right)\left(\frac d\Delta\right).
+\end{equation}
+For bounded-degree linear-distance qLDPC families,
+\begin{equation}
+W_G^*=\Omega(n),\qquad A_G^*=\Omega(n^2).
+\end{equation}
+A serialized source therefore has eager availability exposure $\Omega(n^2/\Lambda)$ under every coordinate ordering. This is a syndrome-availability statement, not a logical-lifetime lower bound.
+
+\section{Finite reusable ports: rigorous hazard bound}
+Consider $C$ generation ports. At any instant, each active port succeeds at rate at most $\mu$, so the total hazard for the next raw success is at most $C\mu$. The assignment policy may be adaptive and may choose which unfinished coordinate each port serves.
+
+Condition on any realized coordinate-order history up to prefix $S_j$. While the frontier width is $w_j$, the conditional expected waiting time to the next success is at least $1/(C\mu)$. Therefore, using iterated expectation,
+\begin{equation}
+\E F_{\rm av}
+=\E\sum_j w_j\Delta t_{j+1}
+\ge\frac1{C\mu}\E\sum_jw_j
+\ge\boxed{\frac{A_G^*}{C\mu}}.
+\end{equation}
+This is schedule independent. Adaptive reassignment can alter the realized order, but every complete order has area at least $A_G^*$ and no schedule can exceed aggregate success hazard $C\mu$.
+
+If $k=Rn$ and $A_G^*=\Omega(n^2)$, then
+\begin{equation}
+\frac{\E F_{\rm av}}{k}=\Omega\!\left(\frac{n}{C\mu}\right).
+\end{equation}
+Keeping availability exposure per encoded output $O(1/\mu)$ requires
+\begin{equation}
+C=\Omega(n).
+\end{equation}
+Taking $C=\Theta(n)$ is sufficient for bounded-degree families to recover fully addressed local-closure scaling. Constant rate alone is not enough; the extensive-area hypothesis is essential.
+
+\section{Completed-block fill time with reusable ports}
+Under a greedy full-utilization policy, when at least $C$ coordinates remain unfinished the aggregate success rate is $C\mu$. After only $C$ coordinates remain, the total rate falls as ports empty. The expected global fill time is
+\begin{equation}
+\E T_{\rm fill}(n,C)=\frac{n-C}{C\mu}+\frac{H_C}{\mu},\qquad C\le n.
+\end{equation}
+For $C=n$ this becomes $H_n/\mu$. Matching the fully addressed $\Theta(\log n/\mu)$ fill scale requires
+\begin{equation}
+C=\Theta(n/\log n).
+\end{equation}
+The gap between $n/\log n$ and $n$ separates completed-block throughput from online availability exposure in families with $A_G^*=\Omega(n^2)$.
+
+\section{Expansion-based specialization}
+Distance alone gives only $O(\sqrt N)$ lower bounds for many HGP families. A stronger sufficient condition is expansion.
+
+\begin{proposition}[Expander separator implication]
+Let a bounded-degree graph $H$ on $M=\Theta(N)$ vertices be a subgraph of the quantum connectivity graph $G_N$. If every balanced vertex separator of $H$ has size $\Omega(M)$, then
+\begin{equation}
+\tw(G_N)=\Omega(N),\qquad\pw(G_N)=\Omega(N),
+\end{equation}
+and therefore $A_{G_N}^*=\Omega(N^2)$.
+\end{proposition}
+\begin{proof}
+Treewidth is monotone under taking subgraphs: $\tw(G_N)\ge\tw(H)$. A graph of treewidth $t$ has a balanced separator of size at most $t+1$, so the separator lower bound gives $\tw(H)=\Omega(M)$. Pathwidth dominates treewidth and the peak-to-area inequality completes the result.
+\end{proof}
+For self-HGP families built from bounded-degree seed graphs with a uniform expansion/spectral gap, the relevant product connectivity contains linear-size expanding sectors, giving the stated extensive-layout regime. This is a sufficient structural specialization, not a claim about every finite HGP instance.
+
+\section{Synthetic HGP construction protocol}
+The finite examples are explicitly synthetic. A reproducible construction is:
+\begin{enumerate}
+\item generate a simple bipartite $(3,4)$-regular classical Tanner graph using a fixed-seed configuration model and reject multiedges;
+\item form the binary parity-check matrix $H$;
+\item construct the self-HGP CSS matrices
+\begin{align}
+H_X&=[H\otimes I\;|\;I\otimes H^T],\\
+H_Z&=[I\otimes H\;|\;H^T\otimes I];
+\end{align}
+\item join qubit coordinates that share a row of $H_X$ or $H_Z$ to form the native connectivity graph;
+\item compute the eager availability constant
+\begin{equation}
+C_{\rm stream}=\frac1N\sum_v(H_{|N[v]|}-1)
+\end{equation}
+for $\mu=1$;
+\item compare batch policy exposure $N(H_N-1)$ with eager exposure $NC_{\rm stream}$;
+\item sample random coordinate orders and record the minimum observed peak $W/N$ only as a heuristic benchmark, not exact pathwidth.
+\end{enumerate}
+The reported matrices are not claimed to reproduce a named published code, and no logical-error result is inferred from them.
+
+\section{Support-complete checks and prior partial-syndrome work}
+For a native check of support size $w_c$ under independent addressed exponential arrivals,
+\begin{equation}
+\Prob[\text{support complete by }t]=(1-e^{-\mu t})^{w_c}.
+\end{equation}
+Bounded-weight checks therefore become physically available on a local timescale. Berthusen and Gottesman study a distinct problem in which a subset of HGP generators is deliberately measured and prove threshold behavior above a sufficient measured-check fraction. Adaptive syndrome extraction later selects measurements using real-time information. These works establish that partial syndrome can be meaningful; they do not determine which checks are physically available when entangled input coordinates themselves arrive stochastically.
+
+Any logical claim for the present setting must additionally specify noisy measurement circuits, temporal correlations, repeated checks, storage noise, and missing-check treatment. None is inferred from support completion alone.
+
+\section{Reproducibility and claim boundary}
+A complete reproduction should report separately:
+\begin{enumerate}
+\item physical raw-pair occupancy;
+\item arrival-defined availability exposure $F_{\rm av}$;
+\item policy-dependent unresolved exposure $F_\pi$;
+\item number of independently progressable generation ports; and
+\item completed-block fill time.
+\end{enumerate}
+Conflating these resources can make streaming appear to save physical memory that it merely resolves earlier at the syndrome layer. The paper's theorem is limited to physical syndrome availability and concurrency. A future timestamp-aware noisy decoder can determine the logical value of that service without modifying the proofs above.
+
+\begin{thebibliography}{10}
+\bibitem{Ataides2025} J. P. Bonilla Ataides \emph{et al.}, Constant-Overhead Fault-Tolerant Bell-Pair Distillation using High-Rate Codes, \emph{Phys. Rev. Lett.} \textbf{135}, 130804 (2025).
+\bibitem{Baspin2022} N. Baspin and A. Krishna, Connectivity constrains quantum codes, \emph{Quantum} \textbf{6}, 711 (2022).
+\bibitem{Berthusen2024} N. Berthusen and D. Gottesman, Partial Syndrome Measurement for Hypergraph Product Codes, \emph{Quantum} \textbf{8}, 1345 (2024), doi:10.22331/q-2024-05-14-1345.
+\bibitem{Berthusen2025} N. Berthusen, S. J. S. Tan, E. Huang, and D. Gottesman, Adaptive Syndrome Extraction, \emph{PRX Quantum} \textbf{6}, 030307 (2025).
+\end{thebibliography}
+\end{document}
