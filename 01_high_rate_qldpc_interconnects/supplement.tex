@@ -1,0 +1,156 @@
+\documentclass[aps,prx,preprint,superscriptaddress,nofootinbib,longbibliography]{revtex4-2}
+\usepackage[T1]{fontenc}\usepackage{amsmath,amssymb,mathtools,amsthm}\usepackage{booktabs,microtype,hyperref}
+\newtheorem{theorem}{Theorem}\newtheorem{lemma}[theorem]{Lemma}\newtheorem{proposition}[theorem]{Proposition}
+\newcommand{\F}{\mathbb F_2}\newcommand{\E}{\mathbb E}\newcommand{\codim}{\operatorname{codim}}
+\begin{document}
+\title{Supplemental Material for ``High-Rate qLDPC Gates over Heralded Interconnects: QEC-Aware Entanglement Service''}
+\author{Ayush Nadiger}\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}\maketitle
+
+\section{Exact local-stabilizer rank after a partial homomorphic CNOT}
+Let block $A$ have CSS stabilizer spaces $C_X^A,C_Z^A\subseteq\F^{n_A}$ and block $B$ have $C_X^B,C_Z^B\subseteq\F^{n_B}$. Let $L_S$ be the binary map corresponding to the executed physical CNOT coordinates. Pauli propagation gives
+\begin{align}
+X_A(x)&\longmapsto X_A(x)X_B(L_Sx), & x&\in C_X^A,\\
+Z_B(z)&\longmapsto Z_A(L_S^Tz)Z_B(z), & z&\in C_Z^B,
+\end{align}
+while $Z_A(C_Z^A)$ and $X_B(C_X^B)$ remain local.
+
+Define
+\begin{align}
+K_X^A(S)&=\{x\in C_X^A:L_Sx\in C_X^B\},\\
+K_Z^B(S)&=\{z\in C_Z^B:L_S^Tz\in C_Z^A\}.
+\end{align}
+
+\begin{theorem}[Partial homomorphic-CNOT syndrome theorem]
+The deficit between the full stabilizer rank and the rank represented by stabilizers supported entirely inside one module is
+\begin{equation}
+\delta_{A\to B}(S)=\codim_{C_X^A}K_X^A(S)+\codim_{C_Z^B}K_Z^B(S).
+\end{equation}
+Equivalently, if $\pi_X^B$ and $\pi_Z^A$ are quotient maps by $C_X^B$ and $C_Z^A$,
+\begin{equation}
+\delta_{A\to B}(S)=\operatorname{rank}(\pi_X^BL_S|_{C_X^A})+\operatorname{rank}(\pi_Z^AL_S^T|_{C_Z^B}).
+\end{equation}
+\end{theorem}
+\begin{proof}
+The post-CNOT stabilizer group has the same total rank as before the unitary layer. Every $X_B(y)$ with $y\in C_X^B$ remains local. A propagated generator $X_A(x)X_B(L_Sx)$ can be multiplied by a target-block $X_B$ stabilizer to obtain an $A$-local stabilizer exactly when $L_Sx\in C_X^B$, contributing local rank $\dim K_X^A(S)$. In the $Z$ sector, $Z_A(C_Z^A)$ remains local and a propagated $Z_B$ stabilizer can be made $B$-local exactly when $L_S^Tz\in C_Z^A$, contributing $\dim K_Z^B(S)$. Thus the module-local rank is
+\begin{equation}
+\dim C_Z^A+\dim C_X^B+\dim K_X^A(S)+\dim K_Z^B(S).
+\end{equation}
+Subtracting from the full rank
+\begin{equation}
+\dim C_X^A+\dim C_Z^A+\dim C_X^B+\dim C_Z^B
+\end{equation}
+gives the result. Rank--nullity applied after quotienting gives the second expression. Missing stabilizer eigenvalues are independent binary constraints, so the deficit is also the exact number of independent nonlocal Pauli-parity values required to reconstruct the instantaneous full syndrome.
+\end{proof}
+
+\section{Matroid-connectivity reduction for ordinary transversal CNOT}
+For a binary code $C\subseteq\F^n$, let $C(T)$ denote the shortened subcode supported entirely on $T$, and let $r_C(T)$ be the column rank of any full-row-rank generator matrix restricted to coordinates in $T$. For ordinary partial transversal CNOT, $L_S=P_S$ is the coordinate projector.
+
+\begin{lemma}
+The kernel appearing in the partial-CNOT theorem satisfies
+\begin{equation}
+K_C(S)=C(S)\oplus C(S^c).
+\end{equation}
+\end{lemma}
+\begin{proof}
+If $P_Sc\in C$, then $P_{S^c}c=c-P_Sc\in C$, so both supported pieces of $c$ are codewords. Conversely, the direct sum of shortened codewords supported in $S$ and $S^c$ is plainly in $K_C(S)$.
+\end{proof}
+Shortening gives
+\begin{equation}
+\dim C(T)=\dim C-r_C(T^c).
+\end{equation}
+Therefore
+\begin{align}
+\codim_CK_C(S)
+&=\dim C-\dim C(S)-\dim C(S^c)\\
+&=r_C(S)+r_C(S^c)-r_C([n])\\
+&\equiv\lambda_C(S).
+\end{align}
+Applying this independently to the propagated $X$ and $Z$ sectors gives
+\begin{equation}
+\delta_Q(S)=\lambda_{C_X}(S)+\lambda_{C_Z}(S).
+\end{equation}
+
+\section{Rate--distance serial area bound}
+Fix a coordinate order $1,\ldots,n$. For a classical code $C$, the prefix connectivity area obeys the standard minimal-span trellis identity
+\begin{equation}
+\sum_{j=1}^{n-1}\lambda_C([j])=\sum_{g\in\mathcal B}(\ell(g)-1),
+\end{equation}
+where $\mathcal B$ is a shortest-span basis and $\ell(g)$ is the span length of basis element $g$. Applying the identity to $C_X$ and $C_Z$, and then to the corresponding dual logical quotient spaces, gives
+\begin{equation}
+A_Q=\sum_{j=1}^{n-1}\delta_Q([j])\ge k(d_X-1)+k(d_Z-1)=k(d_X+d_Z-2).
+\end{equation}
+The same proof applies after any coordinate permutation. Since $A_Q\le(n-1)W_Q$,
+\begin{equation}
+W_Q\ge\frac{k(d_X+d_Z-2)}{n-1}.
+\end{equation}
+The inequality is a serial-prefix statement; it does not convert discrete area directly into physical time.
+
+\section{Checkpoint burst law}
+Let $W_Q^*=\min_\pi\max_j\delta_Q(S_j)$. Suppose the deficit at every checkpoint is at most $w$ and no interval between checkpoints executes more than $b$ new physical CNOT coordinates. Each binary-matroid connectivity term is one-Lipschitz under a one-coordinate change, so their CSS sum is two-Lipschitz. Starting from a checkpoint of deficit at most $w$, every state reached within the next $b$ coordinates therefore has deficit at most $w+2b$. Every coordinate order contains a prefix of deficit at least $W_Q^*$, so
+\begin{equation}
+\boxed{w+2b\ge W_Q^*.}
+\end{equation}
+The factor of two is physical: one executed coordinate can increase both the $X$- and $Z$-sector connectivity terms. For asymptotically good families the scaling conclusion is unchanged: sublinear checkpoint deficit requires an extensive coordinate burst.
+
+\section{Pathwise successful-ebit buffer tradeoff}
+Let $R(t)$ be the coordinates whose Bell resources have heralded and $S(t)\subseteq R(t)$ those already executed. Each connectivity function is one-coordinate Lipschitz, so the CSS sum is two-coordinate Lipschitz:
+\begin{equation}
+|\delta_Q(S)-\delta_Q(T)|\le2|S\triangle T|.
+\end{equation}
+Taking $T=R(t)$ and $S=S(t)$ gives
+\begin{equation}
+\delta_Q(S(t))\ge\delta_Q(R(t))-2|R(t)\setminus S(t)|.
+\end{equation}
+Integrating over physical time yields
+\begin{equation}
+D+2\mathcal B\ge\mathcal R,
+\end{equation}
+where
+\begin{equation}
+D=\int\delta_Q(S(t))dt,\quad \mathcal B=\int|R(t)\setminus S(t)|dt,\quad \mathcal R=\int\delta_Q(R(t))dt.
+\end{equation}
+No stochastic assumption is used. Any causal reduction below the ready-set deficit trajectory therefore spends successful-ebit qubit-time.
+
+\section{Addressability derivations}
+For static address-bound generation, coordinate $i$ has $M_i$ independent raw modes, each succeeding in one attempt with probability $p$. After $D$ attempts its completion probability is
+\begin{equation}
+1-(1-p)^{DM_i}.
+\end{equation}
+For $m$ required coordinates the exact deadline probability is the product over $i$. Concavity of $\log[1-(1-p)^{DM}]$ makes balanced allocation optimal. For fixed small deadline failure $\epsilon$, the total mode budget obeys
+\begin{equation}
+C=\Theta\left(\frac{m\log(m/\epsilon)}{Dp}\right).
+\end{equation}
+
+Under ideal zero-latency pre-heralding retargetability in continuous time, $C$ raw modes each produce useful successes at rate $\mu$ until $m$ coordinates finish. The inter-success times are iid exponentials with rate $C\mu$, hence
+\begin{equation}
+T_m\sim\mathrm{Erlang}(m,C\mu).
+\end{equation}
+The static logarithmic straggler factor is therefore not a universal consequence of heralding; it is an addressability consequence.
+
+\section{Addressed ASAP physical-time exposure}
+For iid rate-$\mu$ exponential coordinate arrivals, the execution order is uniformly random. Let $\bar\delta_j$ be the mean deficit over all $j$-coordinate subsets. The interval between the $j$th and $(j+1)$st order statistics has mean $1/[\mu(n-j)]$, so
+\begin{equation}
+\E\mathcal R=\frac1\mu\sum_{j=0}^{n-1}\frac{\bar\delta_j}{n-j}.
+\end{equation}
+For bounded-check-weight asymptotically good CSS families, $\bar\delta_j=\Theta(\min\{j,n-j,n\})$ over a constant fraction of the profile, giving $\E\mathcal R=\Theta(n/\mu)$. Thus quadratic discrete prefix area and linear stochastic physical-time exposure are compatible.
+
+\section{Finite-code reconstruction protocol}
+The $[[81,3,5]]$--$[[54,2,6]]$ case study is reconstructed from the public parity-check and homomorphism data associated with Li--Preskill--Xu. The reproducibility sequence is:
+\begin{enumerate}
+\item load the released binary matrices over $\F$ and independently verify CSS orthogonality;
+\item compute ranks and certify the quoted dimensions;
+\item independently search nontrivial logical cosets through the required weights to verify the finite distances used in the manuscript;
+\item verify the homomorphic embedding conditions $L(C_X^A)\subseteq C_X^B$ and $L^T(C_Z^B)\subseteq C_Z^A$;
+\item compute $\delta_{A\to B}(S_j)$ by quotient-map rank for every prefix of each candidate order;
+\item compare natural algebraic traversals, a deterministic local-search ordering, and uniformly sampled random orders under the identical invariant.
+\end{enumerate}
+The decoder kill test uses a public $[[18,2,3]]$ bivariate-bicycle component and keeps raw arrival histories and Bell-memory noise matched between the ASAP/deferred and finite-buffer policies. The finite-code result is evidence about one noise/controller family and is intentionally not promoted into the structural theorem.
+
+\begin{thebibliography}{10}
+\bibitem{Forney1973} G. D. Forney, The Viterbi algorithm, \emph{Proc. IEEE} \textbf{61}, 268--278 (1973).
+\bibitem{McEliece1996} R. J. McEliece, On the BCJR trellis for linear block codes, \emph{IEEE Trans. Inf. Theory} \textbf{42}, 1072--1092 (1996).
+\bibitem{Oxley2011} J. Oxley, \emph{Matroid Theory}, 2nd ed. (Oxford University Press, 2011).
+\bibitem{Kashyap2008} N. Kashyap, Matroid pathwidth and code trellis complexity, \emph{SIAM J. Discrete Math.} \textbf{22}, 256--272 (2008).
+\end{thebibliography}
+\end{document}
