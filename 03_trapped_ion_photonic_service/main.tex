@@ -1,0 +1,120 @@
+\documentclass[aps,prx,reprint,superscriptaddress,nofootinbib,longbibliography,floatfix]{revtex4-2}
+\usepackage[T1]{fontenc}\usepackage{amsmath,amssymb,mathtools}\usepackage{booktabs,microtype,hyperref}\usepackage{siunitx}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\begin{document}
+\title{Fault-Tolerant Service Contracts for Integrated Trapped-Ion Photonic Interconnects}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+
+\begin{abstract}
+Integrated photonics can raise trapped-ion remote-entanglement density until local operations, rather than photon collection, become the average-rate bottleneck. Fault-tolerant computation imposes a stronger requirement: Bell resources must arrive in synchronized batches, remain fresh while buffered, survive common-mode interruptions, and cross the networking-to-compute interface before syndrome deadlines. We formulate these requirements as a workload-facing service contract and calibrate it to the projected integrated trapped-ion Bell factory of Knollmann \emph{et al.}, reproducing approximately 859 distilled Bell pairs/s/channel at its declared operating point. Mean capacity and deadline service then separate sharply. A mean-provisioned 850-channel surface-code point meets its aggressive \SI{1}{ms} batch deadline with probability 0.535. In an explicitly independent regenerated-window baseline, a mean-provisioned 94-channel qLDPC point serves all twenty \SI{1}{ms} rounds with probability of order $10^{-5}$; 99.9\% unbuffered operation service requires 133 channels in the same baseline, while the surface-code batch requires 934. For sustained qLDPC service, an 80-pair cache reduces a $10^{-3}$ late-round requirement from about 124 to 96 channels but cannot replace deficient mean capacity. A burst with one \SI{1}{ms} refill window reaches 99.9\% service at $(C,B)=(100,41)$ and reduces a declared zone-equivalent footprint by 19.7\% relative to the unbuffered point. We further derive freshness, handoff-parallelism, shared-failure-domain, and service-qualified hardware-sensitivity laws. The result is not another scalar Bell-rate estimate but a contract over arrival tails, storage, age, handoff width, and failure-domain diversity.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+Modular quantum computing separates local QPU scale from machine scale. Trapped ions are attractive in this setting because high-fidelity local operations coexist with optical interfaces for remote entanglement. Integrated waveguides, couplers, detectors, and control structures shift the engineering question from whether optical functionality can be integrated to how much networking hardware an encoded workload actually requires.
+
+Knollmann \emph{et al.} assemble single-photon heralding, recoil correction, projective distillation, integrated collection, and QCCD transport into a quantitative trapped-ion Bell-factory architecture. Their projected working point is close to a local-operation plateau and supports roughly 858 distilled Bell pairs/s/channel at 99.9\% Bell fidelity. Converting an average Bell demand into a channel count is the natural first provisioning calculation. It is not generally sufficient for a fault-tolerant consumer.
+
+Encoded workloads consume entanglement on short clocks. A transversal intermodule operation may need a large batch within one syndrome interval; a qLDPC workload may need smaller batches over many consecutive rounds. A channel ensemble can satisfy
+\begin{equation}
+CR\tau\ge b
+\end{equation}
+while still missing a substantial fraction of deadlines. Output buffering reduces lower-tail risk but ages stored Bell pairs. The resource must also cross from networking ions to the computational subsystem quickly enough, and multiple nominal channels can share lasers, detectors, photonic fanout, switches, electronics, or optical environments that create correlated failure domains.
+
+Our contribution is therefore narrower than a new ion-trap architecture and broader than a mean-rate estimate: calibrate one published projected Bell factory and derive the \emph{code-synchronous service contract} seen by its consumers. The outputs are channel counts, cache depths, freshness bounds, handoff lanes, failure-domain requirements, and service-qualified hardware shadow prices.
+
+\section{Calibrated Bell-factory model}
+For symmetric nodes with excitation probability $p_e$, branching ratio $\gamma$, end-to-end photon-detection probability $p_d$, and accepted temporal-window probability $p_w$, the raw herald probability per attempt is
+\begin{equation}
+p_h=2p_e\gamma p_dp_w.
+\end{equation}
+The source architecture contains generation, local entangling-gate, and detection/readout stages. Writing their effective durations as $T_{\rm gen}$, $T_{\rm gate}$, and $T_{\rm det}$, the infinite-buffer pipeline limit is
+\begin{equation}
+R_\infty=\frac{p_{\rm dist}}{\max(T_{\rm gen},T_{\rm gate},T_{\rm det})},
+\end{equation}
+where $p_{\rm dist}$ is the projective-distillation success probability. The numerical calibration retains the finite raw-pair queue rather than replacing the factory by a Poisson source at the outset.
+
+At the declared working point $p_e=0.198$, $p_d=0.005$, shuttling time $\SI{100}{\micro s}$, local CNOT time $\SI{225}{\micro s}$, and readout time $\SI{100}{\micro s}$, the reconstructed process produces 859.5 distilled pairs/s/channel, within 0.2\% of the reported approximately 858/s point. This agreement is the provenance check for downstream provisioning. The calculation remains a model of a projected architecture, not a measurement of a fully integrated networking node.
+
+\section{Mean capacity versus deadline service}
+Let $A_\tau(C)$ be the number of distilled Bell pairs produced by $C$ channels during deadline window $\tau$. Mean provisioning requires only
+\begin{equation}
+\E A_\tau(C)\ge b,
+\end{equation}
+whereas a single-round service-level objective requires
+\begin{equation}
+\Prob[A_\tau(C)\ge b]\ge1-\epsilon.
+\label{eq:slo}
+\end{equation}
+For repeated rounds, the correct object is the joint event that every deadline is met. The numerical twenty-round baseline below assumes that after each unbuffered round the source process is regenerated to the same stationary window distribution, so round increments are independent. Correlated rounds require propagation of the joint source state rather than exponentiation of a one-round probability.
+
+Using the calibrated output process and workload parameters adopted in the source architecture gives a large separation. The mean-provisioned surface-code point uses 850 channels but serves the \SI{1}{ms} batch with probability 0.535; 99.9\% unbuffered batch service requires 934 channels. The mean-provisioned qLDPC point uses 94 channels. Under the independent regenerated-window baseline, all twenty \SI{1}{ms} rounds are served with probability of order $10^{-5}$, while 99.9\% operation service requires 133 channels.
+
+These values are scenario-specific channel counts. The transferable conclusion is that mean-flow sufficiency can coexist with severe deadline-tail deficiency on the same calibrated source model.
+
+\section{Sustained cache law and burst refill}
+Let $B_t$ be a cache before round $t$, $X_t$ the new production, and $b$ the demand. Conditional on serving a round, the lossless inventory recursion is
+\begin{equation}
+B_{t+1}=\min\{B_{\max},[B_t+X_t-b]_+\}.
+\end{equation}
+A finite cache cannot replace deficient mean capacity. If $\E X_t<b$, cumulative demand exceeds cumulative production linearly and no finite initial reserve can sustain uninterrupted service indefinitely. This flow-conservation kill test prevents prefetched inventory from being treated as permanent extra capacity.
+
+When the mean margin is positive, inventory can suppress short-window fluctuations. For the declared qLDPC workload, an 80-pair reserve reduces the channel count required for a $10^{-3}$ late-round target from roughly 124 to 96.
+
+A burst workload can additionally exploit known refill slack. With one \SI{1}{ms} refill interval before the declared burst, $(C,B)=(100,41)$ reaches 99.9\% service. Under an explicit accounting of six standard QCCD zones per networking channel and one standard zone per cached Bell half, the zone-equivalent footprint falls from $6(133)=798$ to $6(100)+41=641$, a 19.7\% reduction. The buffered point remains smaller whenever one cached Bell half costs fewer than 4.83 standard zones. Buffering is therefore a hardware substitution only under an explicit memory-cost model.
+
+\section{Freshness and handoff}
+Quantum inventory ages. Suppose a stored Bell pair has visibility $v(a)$ at age $a$ and the encoded interface requires $v\ge v_{\min}$. Any cache policy must satisfy a consumed-age constraint such as
+\begin{equation}
+\Prob[v(A_{\rm use})<v_{\min}]\le\epsilon_{\rm age}.
+\end{equation}
+For exponential visibility $v(a)=v_0e^{-a/T_B}$, useful age is bounded by
+\begin{equation}
+a\le T_B\log(v_0/v_{\min}).
+\end{equation}
+Thus count reliability and Bell coherence cannot be optimized independently.
+
+The networking-to-compute handoff imposes a separate deterministic capacity bound. If $b$ resources must cross the interface in time $\tau$ and one lane requires $t_{\rm hand}$ per pair,
+\begin{equation}
+L_{\rm hand}\ge\left\lceil\frac{bt_{\rm hand}}{\tau}\right\rceil.
+\end{equation}
+Charging only the source architecture's \SI{100}{\micro s} transport contribution already gives lower bounds of 8 qLDPC and 73 surface-code lanes at a \SI{1}{ms} schedule before mapping gates, routing conflicts, or measurement. More Bell production can therefore move the bottleneck into local transfer rather than eliminate it.
+
+\section{Shared failure domains}
+Partition $C$ channels into independent domains of equal size $m$, with each domain unavailable in a round with probability $q_d$. If $Y$ is the number of active channels, the common-mode component obeys
+\begin{equation}
+\operatorname{Var}(Y)=Cm q_d(1-q_d).
+\end{equation}
+At fixed $C$, larger domains preserve mean active capacity but inflate the service tail. In the declared $q_d=10^{-3}$ stress scenario, the 133-channel qLDPC point requires roughly 16 independent domains to recover the chosen $10^{-3}$ operation-outage target. This is a model target for failure-domain granularity, not a measured architecture property.
+
+\section{Hardware shadow prices}
+Let $C_*(\theta)$ be the minimum channel count satisfying the same service objective at physical parameter $\theta$. The channel saving from an improvement $\theta\to\theta'$ is
+\begin{equation}
+\Delta C_\theta=C_*(\theta)-C_*(\theta').
+\end{equation}
+Near the declared qLDPC point, a twofold photon-detection improvement saves 33 channels and a twofold shuttling-speed improvement saves 16, whereas accelerating a stage outside the active critical path can save essentially none. The ranking is workload- and operating-point-dependent by construction.
+
+The device-facing output is therefore a vector
+\begin{equation}
+\mathcal S_{\rm Bell}=\{P[A_\tau\ge b],B,T_B,L_{\rm hand},\mathcal D_{\rm fail},\text{addressability},\text{refill slack}\}
+\end{equation}
+rather than one Bell-pair rate.
+
+\section{Discussion and limitations}
+The calculation is calibrated to a published projected architecture. The largest unresolved physical quantities are Bell-storage quality on the networking ions, the complete networking-to-QPU handoff circuit, correlations among simultaneously operated photonic channels, and the logical treatment of late or aged Bell resources at the code seam. The independent twenty-round calculation is a baseline, not a claim that a real integrated node has independent round increments.
+
+The manuscript also does not claim a general theory of entanglement buffering. Existing work studies multi-memory buffering and distributed-computing constraints in broader settings. Our narrower contribution is a workload-shaped provisioning layer for one integrated Bell-factory architecture.
+
+\section{Conclusion}
+Once remote entanglement is fast enough on average, fault-tolerant service is controlled by tails and interfaces. A projected integrated trapped-ion factory can be mean-capacity sufficient and deadline-service deficient under the same physical model. Buffers trade variance for Bell age and memory footprint; handoff lanes and failure-domain granularity can become active constraints. A service contract makes those substitutions explicit and converts hardware improvements into workload-qualified architectural value.
+
+\begin{thebibliography}{20}
+\bibitem{Knollmann2026} F. W. Knollmann \emph{et al.}, Remote entanglement need not be the bottleneck for modular trapped-ion quantum computing, arXiv:2607.18387v2 (2026).
+\bibitem{Inesta2026} A. G. I\~nesta, B. Davies, S. Kar, \emph{et al.}, Entanglement buffering with multiple quantum memories, \emph{npj Quantum Information} \textbf{12}, 64 (2026).
+\bibitem{Chandra2026} N. K. Chandra, S. Guha, and K. P. Seshadreesan, Multiplexed Bilayered Realization of Fault-Tolerant Quantum Computation over Optically Networked Trapped-Ion Modules, \emph{IEEE Trans. Quantum Eng.} \textbf{7}, 3100818 (2026).
+\bibitem{Kaur2026} E. Kaur \emph{et al.}, Impact of Network Constraints on Fault-Tolerant Distributed Quantum Computing, arXiv:2606.17495 (2026).
+\bibitem{Chandra2024} A. Chandra, F. Rozp\k{e}dek, and D. Towsley, Role of Error Syndromes in Teleportation Scheduling, arXiv:2408.04536 (2024).
+\end{thebibliography}
+\end{document}
