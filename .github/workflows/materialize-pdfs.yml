@@ -27,8 +27,19 @@ jobs:
           compile() {
             dir="$1"
             file="$2"
+            stem="${file%.tex}"
             echo "==> $dir/$file"
-            (cd "$dir" && latexmk -pdf -file-line-error -halt-on-error -interaction=nonstopmode "$file")
+            (
+              cd "$dir"
+              cat > __archive_build.tex <<EOF
+          \\PassOptionsToPackage{expansion=false}{microtype}
+          \\input{$file}
+          EOF
+              latexmk -pdf -file-line-error -halt-on-error -interaction=nonstopmode __archive_build.tex
+              mv __archive_build.pdf "$stem.pdf"
+              latexmk -C __archive_build.tex || true
+              rm -f __archive_build.tex
+            )
           }
 
           compile 01_high_rate_qldpc_interconnects main.tex
