@@ -1,1 +1,214 @@
-PLACEHOLDER
+\documentclass[11pt]{article}
+\usepackage[margin=1.02in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,citecolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\F}{\mathbb F}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\ccutraw}{c_{\rm raw}^{\rm cut}}
+\newcommand{\cdiag}{c_{\rm targ}^{\rm cut}}
+\newcommand{\crep}{c_{\rm raw}^{\rm rep}}
+\title{Repair Identifiability and Product-Measurement Complexity\\of Bond Failures in Graph States}
+\author{Ayush Nadiger\\University of Massachusetts Amherst}
+\date{August 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+A product-measurement diagnosis protocol has two independent design choices: the physical fault catalogue and the statistics retained from each measurement record. We separate these choices for known graph states and connect them through a bond-local repair problem. For an intended edge $e=(u,v)$, let $C_e$ denote a severed entangling bond and let $D_e(\lambda_u,\lambda_v)$ denote endpoint $Z$-dephasing with coherences $\lambda_u,\lambda_v$. At full endpoint dephasing, the target graph-basis diagonals of $C_e$ and $D_e$ coincide exactly, but the physical repair actions differ. We characterize exactly where the omitted Pauli information lives: a Pauli observable distinguishes the two hypotheses if and only if it lies in $\pm S(G-e)\setminus\pm S(G)$. This yields a local-support criterion and shows that endpoint-pair tomography is blind unless an endpoint is a leaf or the endpoints are external twins. The exact blind point is the endpoint of a continuous statistical obstruction: with $g=\max\{|\lambda_u|,|\lambda_v|\}$, retained target-stabilizer data require and suffice with $\Theta(g^{-2}\log(1/\delta))$ copies as $g\to0$.
+
+We then distinguish three finite setting resources: raw cut diagnosis $\ccutraw$, target-compressed cut diagnosis $\cdiag$, and raw bond-repair diagnosis $\crep$. They satisfy $\ccutraw\le\cdiag\le\crep$. A raw repair schedule must both localize the candidate edge at the target level and expose a compatible failed-graph repair witness for every edge. Edge-separating color classes give $\crep\le2$ on bipartite graphs and $\crep\le3$ on wheels. The one-context boundary is exact: for every connected graph with an edge, $\crep(G)=1$ if and only if $G$ is a star. Under a fixed Pauli-weight cap, wheels exhibit a qualitative separation between raw outcomes and target-stabilizer compression. Exact enumeration over all connected graph isomorphism classes on two through eight vertices finds no raw-cut cost above two and no raw-repair cost above three. Finally, under local depolarizing attenuation, the minimum failed-graph witness weight is the high-noise sampling exponent for repair typing.
+\end{abstract}
+
+\section{Introduction}
+State verification and hardware repair are different inference problems. Verification asks whether a delivered state resembles a target. Repair diagnosis asks which physical mechanism caused the deviation and therefore which intervention should be attempted. In graph-state networks both tasks are often fed by stabilizer data. The central question here is what repair information survives the choice of product-Pauli measurement settings and, separately, the choice to retain only target-stabilizer parities from the raw record.
+
+The topology is assumed known. This distinguishes the problem from hidden-cut and StateHSP learning, which infer an unknown factorization, symmetry, or stabilizer structure \cite{BGW,HEC}. It is also distinct from graph-state learning and target-state verification \cite{OT,PLM,DHZ}. The latent label is a physical mechanism at an intended bond.
+
+\section{Graph states and product contexts}
+For a simple graph $G=(V,E)$, the graph state $|G\rangle$ is stabilized by
+\[
+K_a=X_a\prod_{b\in N(a)}Z_b,
+\]
+and $S(G)=\{K_A^G=\prod_{a\in A}K_a:A\subseteq V\}$. The graph-basis states are $|G_x\rangle=Z^x|G\rangle$, $x\in\F_2^V$.
+
+\begin{proposition}[Target graph diagonal and stabilizers]
+If $p_x=\langle G_x|\rho|G_x\rangle$, then
+\[
+\langle K_A^G\rangle_\rho=\sum_x(-1)^{x\cdot\mathbf1_A}p_x,
+\qquad
+p_x=2^{-|V|}\sum_A(-1)^{x\cdot\mathbf1_A}\langle K_A^G\rangle_\rho.
+\]
+Thus the complete target graph diagonal is equivalent to all target-stabilizer expectations.
+\end{proposition}
+
+For a single deleted edge $e=(u,v)$,
+\begin{lemma}[Cut signature]
+\[
+\langle G-e|K_A^G|G-e\rangle=\mathbf1[A\cap\{u,v\}=\varnothing].
+\]
+\end{lemma}
+\begin{proof}
+If $A$ avoids $u,v$, every generator in the product is unchanged by edge deletion. If $A$ contains an endpoint, the target stabilizer anticommutes with a stabilizer of $|G-e\rangle$, forcing zero expectation.
+\end{proof}
+
+A product-Pauli context is a map $\beta:V\to\{X,Y,Z\}$. The raw outcome $y\in\{\pm1\}^V$ contains every compatible Pauli correlator. Indeed,
+\[
+p_\rho^\beta(y)=2^{-|V|}\sum_{A\subseteq V}\left(\prod_{v\in A}y_v\right)\Tr(P_A^\beta\rho),
+\]
+where $P_A^\beta=\prod_{v\in A}\beta(v)$. Retaining only target-stabilizer parities is therefore a classical compression of a richer raw record.
+
+\section{Target-diagonal repair blindness}
+Let
+\[
+\Delta_Z^{(\lambda)}(\rho)=\frac{1+\lambda}{2}\rho+\frac{1-\lambda}{2}Z\rho Z,
+\]
+and define $D_e(\lambda_u,\lambda_v)=\Delta_{Z_u}^{(\lambda_u)}\Delta_{Z_v}^{(\lambda_v)}(|G\rangle\langle G|)$.
+
+\begin{theorem}[Exact blind point]
+For every edge $e=(u,v)$ and every target stabilizer $K_A^G$,
+\[
+\Tr(K_A^G C_e)=\Tr(K_A^G D_e(0,0)).
+\]
+Hence $C_e$ and $D_e(0,0)$ have identical target graph-basis diagonals.
+\end{theorem}
+\begin{proof}
+Deleting $e$ is equivalent to applying $CZ_{uv}$ once more to the target state, and
+\[
+CZ_{uv}=\tfrac12(I+Z_u+Z_v-Z_uZ_v).
+\]
+Thus $|G-e\rangle$ is an equal-modulus coherent superposition of four orthogonal target graph-basis states. Full independent endpoint dephasing produces the incoherent uniform mixture of the same four labels, so their graph diagonals, and therefore all target-stabilizer expectations, agree.
+\end{proof}
+
+\begin{theorem}[Near-blindness]
+Put $g=\max\{|\lambda_u|,|\lambda_v|\}$. Then
+\[
+\langle K_A^G\rangle_{D_e}=\lambda_u^{\mathbf1[u\in A]}\lambda_v^{\mathbf1[v\in A]},
+\qquad
+\langle K_A^G\rangle_{C_e}=\mathbf1[A\cap\{u,v\}=\varnothing].
+\]
+The largest target-stabilizer contrast is exactly $g$, and the optimal target-data copy complexity is
+\[
+\Theta\!\left(g^{-2}\log\frac1\delta\right).
+\]
+\end{theorem}
+\begin{proof}[Proof sketch]
+Dephasing multiplies a Pauli expectation by $\lambda_u$ or $\lambda_v$ when its $X/Y$ support contains that endpoint. Hoeffding thresholding gives the upper bound. For the converse, even an ideal target graph-basis sample has one-copy divergence only $O(g^2)$ between the two hypotheses, yielding the matching testing lower bound.
+\end{proof}
+
+\section{Where the missing repair information lives}
+Let $G'=G-e$. Its endpoint stabilizers include
+\[
+K_u^{G'}=X_u\prod_{w\in N_G(u)\setminus\{v\}}Z_w,
+\qquad
+K_v^{G'}=X_v\prod_{w\in N_G(v)\setminus\{u\}}Z_w.
+\]
+Each has expectation one on the cut state and zero after full endpoint dephasing.
+
+\begin{theorem}[Exact Pauli support difference]
+A Hermitian Pauli $P$ distinguishes $C_e$ from $D_e(0,0)$ if and only if
+\[
+\boxed{P\in\pm S(G-e)\setminus\pm S(G).}
+\]
+\end{theorem}
+\begin{proof}
+The nonzero Pauli expectations of the pure cut state are exactly $\pm S(G-e)$. Full endpoint dephasing retains only target stabilizers with no $X/Y$ action at either endpoint, a subset of $\pm S(G)$. On the intersection the two states agree; outside both supports they both vanish. The symmetric difference therefore reduces exactly to the displayed failed-graph-only stabilizers.
+\end{proof}
+
+\begin{corollary}[Endpoint tomography]
+Tomography restricted to the two endpoints distinguishes the mechanisms if and only if an endpoint is a leaf or the endpoints are external twins, meaning they have the same neighborhood outside each other.
+\end{corollary}
+\begin{proof}[Proof sketch]
+A two-endpoint repair witness must be a failed-graph stabilizer whose external $Z$ support vanishes. This occurs for a single endpoint generator exactly at a leaf, or for a product of the endpoint generators exactly when their external neighborhoods cancel.
+\end{proof}
+
+\section{Setting resources}
+Define $\ccutraw(G)$ as the minimum number of contexts whose full raw distributions distinguish the null state and all single-edge cuts. Define $\cdiag(G)$ analogously when only compatible target-stabilizer parities are retained. Define $\crep(G)$ as the minimum number of raw-outcome contexts that both localize a suspect bond and type cut versus full endpoint dephasing at that bond.
+
+\begin{theorem}[Resource hierarchy]
+\[
+\boxed{\ccutraw(G)\le\cdiag(G)\le\crep(G).}
+\]
+\end{theorem}
+\begin{proof}
+Raw outcomes contain every compatible target parity, proving the first inequality. For the second, any raw repair schedule must still distinguish the target state from the endpoint-dephased subcatalogue; every informative Pauli for that subproblem lies in the target stabilizer group, so the schedule must expose enough target information to localize the edge.
+\end{proof}
+
+A raw repair schedule succeeds exactly when two conditions hold: its compatible target-stabilizer labels localize every candidate edge, and every candidate edge is covered by at least one compatible Pauli in $S(G-e)\setminus S(G)$.
+
+If $R\subseteq V$ is edge-separating and $G[R]$ is $k$-colorable, the color classes define $k$ compatible contexts that supply both ingredients. Hence
+\[
+\crep(G)\le\min_{R\text{ edge-separating}}\chi(G[R])\le\chi(G).
+\]
+Consequently $\crep\le2$ on bipartite graphs and $\crep\le3$ on wheels.
+
+\begin{theorem}[One-context boundary]
+For every connected graph with at least one edge,
+\[
+\boxed{\crep(G)=1\iff G\text{ is a star}.}
+\]
+\end{theorem}
+\begin{proof}[Proof sketch]
+A star admits one context that separates all incident-edge signatures and contains an appropriate failed-graph endpoint stabilizer for every candidate. Conversely, a one-context schedule on a non-star connected graph contains a path of length three. The target-localization constraints and the failed-graph repair-witness constraints on its middle bonds force incompatible local Pauli assignments in the same product context. Thus no non-star is one-context repair diagnosable.
+\end{proof}
+
+It follows that every non-star tree has $\crep=2$ and $\crep(K_n)=2$ for $n\ge4$.
+
+\section{Bounded Pauli weight}
+Let the diagnosis use only correlators of physical Pauli weight at most $w$. Wheels give an infinite separation at $w=3$.
+
+\begin{theorem}[Wheel separation]
+For every wheel $W_n$ with $n\ge8$,
+\[
+c_{\rm raw}^{\rm cut,\le3}(W_n)=\chi(C_{n-1})\le3,
+\]
+while
+\[
+c_{\rm targ}^{\rm cut,\le3}(W_n)=c_{\rm raw}^{\rm rep,\le3}(W_n)=\infty.
+\]
+For $n\ge9$ the raw equality follows from a symbolic rim-cycle construction; $W_8$ is the exact finite boundary case.
+\end{theorem}
+
+Thus a physical shot can contain low-weight failed-graph information that disappears entirely after compression to the target stabilizer dictionary. Complete graphs provide a control family: already at weight two their exact profile is $(c_{\rm raw}^{\rm cut},c_{\rm targ}^{\rm cut},c_{\rm raw}^{\rm rep})=(1,1,2)$.
+
+\section{Exact finite census}
+The context problems become exact finite set-cover problems for a fixed graph. Exhaustive enumeration over all $12{,}112$ connected graph isomorphism classes on two through eight vertices finds no $\ccutraw>2$ and no $\crep>3$. At seven vertices the $853$ classes split as $435$ with raw-cut cost one and $418$ with cost two; raw repair gives one one-context class, $617$ two-context classes, and $235$ three-context classes. At eight vertices the corresponding counts are $(3623,7494)$ for raw cut and $(1,5413,5703)$ for raw repair. The unique one-context raw-repair class is the star, matching the theorem above. Exact wheel obstructions give $\crep(W_n)=3$ for $n=6,8,10,12,14$. These are computer-assisted finite results, not asymptotic theorems.
+
+\section{Finite shots and local depolarizing noise}
+Repeating one context $m$ times estimates all selected compatible correlators simultaneously. Thus a $k$-context schedule repeated $m$ times costs $km$ copies, not one independent sample budget per correlator.
+
+Under local depolarizing attenuation, suppose each nonidentity local Pauli is multiplied by $f$. A weight-$w$ Pauli expectation is then attenuated by $f^w$. Define
+\[
+d_e^{\rm fail}=\min\{\operatorname{wt}(P):P\in\pm S(G-e)\setminus\pm S(G)\}.
+\]
+\begin{theorem}[Witness weight as sampling exponent]
+For fixed $G,e$ and $f\to0$, the optimal copy complexity for typing $C_e$ versus $D_e(0,0)$ obeys
+\[
+\boxed{N^*=\Theta_G\!\left(f^{-2d_e^{\rm fail}}\log\frac1\delta\right).}
+\]
+The lower bound holds even if collective measurements across copies are allowed.
+\end{theorem}
+\begin{proof}[Proof sketch]
+The lightest failed-graph-only stabilizer gives an achievable gap $f^{d_e^{\rm fail}}$. Conversely, by definition the two depolarized states agree in all lower-weight Pauli coefficients, so their trace-distance expansion begins at that same order; standard hypothesis-testing bounds give the matching quadratic sample exponent.
+\end{proof}
+
+\section{Discussion}
+Localization and repair typing can require different observable dictionaries. Known topology can make edge localization cheap, while target-stabilizer compression can be exactly blind to the physical distinction between an absent bond and fully dephased endpoint memories. The missing information is not generic tomography: it is precisely the failed-graph stabilizer content outside the target stabilizer group.
+
+The conclusions are conditioned on the stated state-level interface. Heralding records, device telemetry, timestamps, adaptive nondestructive measurements, and broader multi-fault catalogues can all change the diagnosis problem. That dependence is the point: a repair protocol should specify not only what is measured, but which statistics of the measurement record survive into the controller.
+
+\begin{thebibliography}{99}\small
+\bibitem{Hein} M.~Hein et al., ``Entanglement in graph states and its applications,'' arXiv:quant-ph/0602096.
+\bibitem{BGW} A.~Bouland, T.~Giurgic\u{a}-Tiron, and J.~Wright, ``The state hidden subgroup problem and an efficient algorithm for locating unentanglement,'' STOC 2025; arXiv:2410.12706.
+\bibitem{HEC} M.~Hinsche, J.~Eisert, and J.~Carrasco, ``Abelian State Hidden Subgroup Problem: Learning Stabilizer Groups and Beyond,'' PRX Quantum \textbf{7}, 020337 (2026).
+\bibitem{OT} Y.~Ouyang and M.~Tomamichel, ``Learning quantum graph states with product measurements,'' Proc. IEEE ISIT 2022.
+\bibitem{PLM} S.~Pallister, N.~Linden, and A.~Montanaro, ``Optimal verification of entangled states with local measurements,'' Phys. Rev. Lett. \textbf{120}, 170502 (2018).
+\bibitem{DHZ} N.~Dangniam, Y.-G.~Han, and H.~Zhu, ``Optimal verification of stabilizer states,'' Phys. Rev. Research \textbf{2}, 043323 (2020).
+\end{thebibliography}
+\end{document}
