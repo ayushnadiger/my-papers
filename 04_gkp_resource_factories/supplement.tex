@@ -1,0 +1,152 @@
+\documentclass[aps,prx,preprint,superscriptaddress,nofootinbib,longbibliography]{revtex4-2}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,mathtools,booktabs,microtype,hyperref}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\begin{document}
+\title{Supplemental Material for ``Throughput Is Not Enough: Synchronization and Loss Constraints for GKP-State Factories in High-Rate Photonic Repeaters''}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+\maketitle
+
+\section{Inverse-design convention}
+The numerical benchmark in the main text is deliberately separated from the resource-success labels reported by Shiina \emph{et al.} Their $>0.999$ and $>0.9999$ initial-resource counts already refer to simultaneous preparation success across the repeater chain and are therefore not reinterpreted as an independent downstream conditional probability.
+
+The standalone factory benchmark instead declares
+\begin{equation}
+N=3800,\qquad S=111,\qquad p_F=0.999,
+\end{equation}
+where $N$ is a rounded payload-scale anchor motivated by the approximately 3800 initial GKP qubits per station per protocol run reported at a representative high-rate repeater point, $S$ is a representative synchronization scale, and $p_F$ is an independently chosen factory-readiness target. No present finite-energy GKP source is assumed to satisfy this contract.
+
+A generic reliability composition rule remains valid when two events are genuinely distinct: if a factory-qualified event $F$ is followed by a downstream event $C$ with $\Prob(C\mid F)=p_C$, then $\Prob(F)\ge p_{\rm tot}/p_C$ is sufficient for total readiness $p_{\rm tot}$. We do not use that decomposition for the benchmark above.
+
+\section{Independent synchronized service}
+For iid independent station counts $A_s$, synchronized factory readiness requires
+\begin{equation}
+\Prob(A_1\ge N,\ldots,A_S\ge N)\ge p_F,
+\end{equation}
+so the local target is
+\begin{equation}
+p_{\rm loc}=p_F^{1/S}=0.9999909865.
+\end{equation}
+The associated one-station shortage probability is approximately $9.0135\times10^{-6}$ per cycle.
+
+If $M$ independent source opportunities each yield one service-qualified state with probability $y$, then $A\sim\mathrm{Binomial}(M,y)$ and the minimum $M$ is obtained by exact integer tail inversion. In the low-yield/high-parallelism limit, $A\sim\mathrm{Poisson}(\lambda)$ with $\lambda=My$ and the requirement becomes
+\begin{equation}
+Q(N,\lambda)=\Prob[A\ge N]\ge p_{\rm loc}.
+\end{equation}
+Monotone inversion of the exact Poisson survival function at $N=3800$ gives
+\begin{equation}
+\boxed{\lambda_*=4070.1489},
+\end{equation}
+with count overhead
+\begin{equation}
+\frac{\lambda_*-N}{N}=0.0710918=7.10918\%.
+\end{equation}
+At an illustrative factory clock of $10^5\,\mathrm{s}^{-1}$ this corresponds to $4.07015\times10^8$ accepted states/s/station. The clock is a scenario variable; the per-cycle tail law does not require it.
+
+\section{Gamma--Poisson common-mode benchmark}
+Let one station-cycle have a random multiplicative rate factor $Z$ with $\E Z=1$ and
+\begin{equation}
+A\mid Z=z\sim\mathrm{Poisson}(\lambda z).
+\end{equation}
+For a Gamma rate factor with shape $k$ and scale $1/k$,
+\begin{equation}
+\operatorname{Var}(Z)=1/k.
+\end{equation}
+An RMS fractional rate fluctuation $r$ therefore corresponds to $k=r^{-2}$. Poisson--Gamma mixing gives
+\begin{equation}
+\Prob(A=a)=\frac{\Gamma(a+k)}{\Gamma(k)a!}
+\left(\frac{k}{k+\lambda}\right)^k
+\left(\frac{\lambda}{k+\lambda}\right)^a,
+\end{equation}
+with mean $\lambda$ and variance $\lambda+\lambda^2/k$.
+
+Exact lower-tail inversion at the same $p_{\rm loc}$ gives
+\begin{align}
+\lambda_{5\%}&=4798.8595, & \frac{\lambda_{5\%}-N}{N}&=26.2858\%,\\
+\lambda_{10\%}&=6083.0401, & \frac{\lambda_{10\%}-N}{N}&=60.0800\%.
+\end{align}
+These are distribution-specific benchmarks, not universal jitter penalties. Their purpose is to demonstrate that moderate common-mode variation can dominate independent shot noise when the service event probes an extreme lower tail.
+
+If only the mean and variance of accepted count are known, Cantelli's inequality gives
+\begin{equation}
+\Prob(A<N)\le\frac{\sigma_A^2}{\sigma_A^2+(\mu_A-N)^2},
+\end{equation}
+which is far too loose to certify the required local shortage probability at modest overhead. RMS stability alone is therefore insufficient; a physical factory must provide either a measured lower tail/joint distribution or a justified stochastic model.
+
+\section{Pooling versus labeled near-determinization}
+Suppose $N$ labeled downstream ports are each made ready independently with probability $1-\delta$. Requiring every port to be ready with probability at least $1-\epsilon$ gives
+\begin{equation}
+(1-\delta)^N\ge1-\epsilon,
+\end{equation}
+and therefore $\delta\lesssim\epsilon/N$ in the small-failure regime. In common independent-retry constructions, driving a labeled failure probability to $O(1/N)$ requires logarithmically growing retry/resource depth. A pooled inventory instead pays one aggregate count-tail constraint. The statistical advantage must be charged against the physical switch depth, insertion loss, and control bandwidth required to realize that fungibility.
+
+\section{One-cycle FIFO reserve and quasi-stationary benchmark}
+Let $X_t\sim\mathrm{Poisson}(\lambda)$ be new accepted production, $B_t\in\{0,\ldots,B_{\max}\}$ the reserve at cycle start, and demand $N$. A cycle is served when $B_t+X_t\ge N$, after which
+\begin{equation}
+B_{t+1}=\min\{B_{\max},B_t+X_t-N\}.
+\end{equation}
+Failure makes the nonfailure transition matrix substochastic:
+\begin{equation}
+Q_{ij}=\sum_{x=0}^{\infty}e^{-\lambda}\frac{\lambda^x}{x!}
+\mathbf 1\!\left[j=\min\{B_{\max},i+x-N\}\right]
+\mathbf 1[i+x\ge N].
+\end{equation}
+
+For $B_{\max}=N$, let $q$ be the normalized left quasi-stationary distribution of $Q$ and $\rho$ its dominant eigenvalue. Starting in that survivor-conditioned operating distribution, one station survives $H$ more cycles with probability $\rho^H$. We make the benchmark horizon explicit and impose
+\begin{equation}
+\rho^{10S}\ge0.999
+\end{equation}
+for ten consecutive synchronized cycles across $S=111$ stations.
+
+Monotone inversion yields
+\begin{equation}
+\boxed{\lambda_{\rm buf}\simeq3804.633},
+\end{equation}
+corresponding to
+\begin{equation}
+\frac{\lambda_{\rm buf}-N}{N}\simeq0.001219=0.1219\%.
+\end{equation}
+This number is not a stationary no-failure guarantee over an infinite horizon; it is the declared ten-cycle quasi-stationary service benchmark.
+
+Under FIFO, old reserve states are consumed first. If $U_t=\min\{B_t,N\}$ is the number of one-cycle-old states consumed, then
+\begin{equation}
+f_{\rm old}=\frac{\E_q U_t}{N}\simeq0.9015.
+\end{equation}
+The same quasi-stationary calculation gives mean overflow discarded after a served cycle of approximately 4.64 states. Thus the count-only benefit is purchased by making most consumed resources one cycle old.
+
+If age changes the GKP quality variable or analog side information, the count service event must be replaced by a quality-qualified event such as
+\begin{equation}
+\#\{i:Q_i(A_i)\ge Q_{\min},\ \eta_i\ge\eta_{\min}\}\ge N.
+\end{equation}
+The present count model deliberately leaves that physical quality map to the source/refinery and repeater decoder.
+
+\section{Routing-loss inversion}
+If each accepted state traverses $d$ statistically similar routing stages with power transmission $\eta_{\rm sw}$,
+\begin{equation}
+\eta_{\rm route}=\eta_{\rm sw}^d.
+\end{equation}
+In decibels, $L_{\rm route}=dL_{\rm sw}$, so any repeater-level routing-loss allowance implies
+\begin{equation}
+\boxed{L_{\rm sw}\le L_{\rm route}/d.}
+\end{equation}
+For representative large-port depth $d=17$, even a modest aggregate routing allowance can imply a per-stage target of only a few millidecibels. This is an inverse-design constraint, not an assertion that a present switch platform reaches it.
+
+\section{Reproducibility protocol}
+Every stochastic number in the corrected main text follows from the following auditable sequence:
+\begin{enumerate}
+\item declare $N=3800$, $S=111$, and $p_F=0.999$ independently of the source paper's chain-wide resource-success labels;
+\item compute $p_{\rm loc}=p_F^{1/S}$ and invert the exact Poisson survival function;
+\item for common-mode benchmarks set Gamma shape $k=r^{-2}$ and invert the exact negative-binomial survival function;
+\item for buffering construct the substochastic reserve kernel with $B_{\max}=N$, compute its dominant eigenvalue/vector, and solve $\rho^{10S}=0.999$;
+\item evaluate old-state consumption and overflow in the same quasi-stationary ensemble;
+\item convert any downstream routing-loss allowance into a per-stage target by division of the decibel budget by routing depth.
+\end{enumerate}
+A physical follow-up then supplies the joint distribution $P(N_{\rm acc},Q,A,\eta_{\rm route})$ and composes it with the actual repeater construction and analog decoder.
+
+\begin{thebibliography}{10}
+\bibitem{Shiina2026} R. Shiina, K. Goodenough, N. Arnold, and F. Rozp\k{e}dek, High-Rate and Resource-Efficient All-Photonic Quantum Repeater Architectures with 9 km Repeater Spacing, arXiv:2606.25314v2 (2026).
+\bibitem{Larsen2025} M. V. Larsen \emph{et al.}, Integrated photonic source of Gottesman--Kitaev--Preskill qubits, \emph{Nature} \textbf{642}, 587--591 (2025).
+\end{thebibliography}
+\end{document}
