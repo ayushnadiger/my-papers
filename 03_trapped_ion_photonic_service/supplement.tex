@@ -1,0 +1,143 @@
+\documentclass[aps,prx,preprint,superscriptaddress,nofootinbib,longbibliography]{revtex4-2}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,mathtools,booktabs,microtype,hyperref,siunitx}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\begin{document}
+\title{Supplemental Material for ``Fault-Tolerant Service Contracts for Integrated Trapped-Ion Photonic Interconnects''}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+\maketitle
+
+\section{Scope and provenance rule}
+The main text takes the integrated trapped-ion Bell factory of Knollmann \emph{et al.} as a fixed physical architecture and asks a downstream provisioning question. This supplement records the reconstruction, stochastic service calculations, cache model, freshness and handoff bounds, failure-domain model, and sensitivity procedure. No parameter inferred from the workload calculations is fed back into the source architecture. Hardware quantities are either quoted from the source working point or explicitly declared as scenario variables.
+
+The source paper projects approximately $858\,\mathrm{s}^{-1}$ distilled Bell pairs per channel at 99.9\% fidelity. Its representative operating point includes excitation probability $p_e=0.198$, end-to-end photon-detection probability $p_d=0.005$, a four-ion buffer, a \SI{225}{\micro s} CNOT, \SI{100}{\micro s} detection, and \SI{100}{\micro s} shuttling. These values are treated as inputs, not fitted to the service-level outputs. The independent reconstruction target is the source paper's per-channel distilled rate. The present model returns $859.5\,\mathrm{s}^{-1}$, within 0.2\% of that target.
+
+\section{Bell-factory reconstruction}
+For symmetric nodes, one raw single-photon-heralding attempt has probability
+\begin{equation}
+ p_h=2p_e\gamma p_dp_w,
+\end{equation}
+where $\gamma$ is the relevant branching factor and $p_w$ is the accepted temporal-window probability. The detailed values of $\gamma$ and $p_w$ are inherited from the source working-point table; they are not re-estimated here.
+
+The pipeline contains three service blocks: raw-pair generation, local distillation gates, and detection/readout. If their effective times per distilled-output opportunity are $T_{\rm gen}$, $T_{\rm gate}$, and $T_{\rm det}$, the infinite-buffer pipeline limit is
+\begin{equation}
+ R_\infty=\frac{p_{\rm dist}}{\max(T_{\rm gen},T_{\rm gate},T_{\rm det})}.
+\end{equation}
+The numerical reconstruction does not replace the raw-pair buffer by its mean. Instead it advances a discrete event state containing the occupancy of the raw-pair queue and the availability of the distillation stage. A herald inserts one raw pair if buffer space is available; two raw pairs enable one projective-distillation attempt; local-gate and detection stages then consume their declared durations. The reported $859.5\,\mathrm{s}^{-1}$ is the stationary completed-output rate of this finite-queue process.
+
+A useful audit is the critical-path comparison. Around the source working point the architecture is close to the local-operation plateau: improving photon collection eventually stops improving output because the gate/detection/shuttling path becomes active. This is why hardware sensitivity must be conditioned on the full service objective rather than ranked by isolated percentage improvement.
+
+\section{Finite-window service calculation}
+Let $N_C(t)$ be the completed distilled-output counting process for one calibrated channel. For $C$ statistically independent channels,
+\begin{equation}
+ A_\tau(C)=\sum_{c=1}^{C}[N_c(t+\tau)-N_c(t)] .
+\end{equation}
+The service probability for a batch of size $b$ is
+\begin{equation}
+ S(C;b,\tau)=\Prob[A_\tau(C)\ge b].
+\end{equation}
+The minimum unbuffered channel count for target failure probability $\epsilon$ is found by integer monotone search,
+\begin{equation}
+ C_* = \min\{C:S(C;b,\tau)\ge1-\epsilon\}.
+\end{equation}
+For repeated rounds, one operation is declared successful only when every round is served. If round increments are independent after regeneration of the source state, the operation probability is the product of the round probabilities; the simulation retains the state explicitly whenever a cache is present.
+
+The headline values in the main text use the workload parameters inherited from the source architecture. Mean provisioning gives 850 surface-code channels and 94 qLDPC channels. Evaluating the actual finite-window counting process at those points gives single-batch success $0.535$ for the surface-code case and approximately $10^{-5}$ probability of serving all twenty qLDPC rounds. Integer inversion of the 99.9\% service condition gives 934 and 133 channels, respectively. These numbers are therefore consequences of the same calibrated source process, not of switching from one physical source model to another.
+
+\section{Inventory Markov chain}
+For sustained demand $b$ per round, reserve capacity $B_{\max}$, and new output $X_t$, the cache state obeys
+\begin{equation}
+ B_{t+1}=\min\{B_{\max},[B_t+X_t-b]_+\}
+\end{equation}
+conditional on the round being served. A failure occurs when $B_t+X_t<b$. For a discrete output distribution $P_X$, this defines a finite Markov chain over cache states $0,\ldots,B_{\max}$. Its substochastic transition matrix among nonfailure states is
+\begin{equation}
+ Q_{ij}=\sum_x P_X(x)\,\mathbf 1\!\left[j=\min\{B_{\max},i+x-b\}\right]\mathbf 1[i+x\ge b].
+\end{equation}
+Starting from reserve distribution $\pi_0$, the probability that $r$ rounds are all served is
+\begin{equation}
+ P_{\rm op}=\pi_0^T Q^r\mathbf 1.
+\end{equation}
+The minimum channel count at fixed $B_{\max}$ is again found by monotone integer search.
+
+The flow-conservation kill test follows without a Markov approximation. Let $D_T=Tb$ be cumulative demand and $Y_T=\sum_{t=1}^{T}X_t$ cumulative production. A finite initial reserve $B_0$ can serve all $T$ rounds only if $Y_T+B_0\ge D_T$. If $\E X_t<b$, the strong law gives $(Y_T-D_T)/T\to\E X_t-b<0$, so the probability of indefinite uninterrupted service tends to zero. No finite buffer can turn a negative mean service margin into a stationary fault-tolerant supply.
+
+For the declared qLDPC case, applying the finite-state calculation gives the reported reduction from about 124 channels with no reserve to 96 channels with an 80-pair reserve at a $10^{-3}$ late-round target.
+
+\section{Burst refill calculation}
+A burst differs because the controller is permitted a known refill window before demand begins. If $X_{\rm ref}$ is production during the refill interval, the initial cache is
+\begin{equation}
+ B_0=\min\{B_{\max},X_{\rm ref}\}.
+\end{equation}
+The subsequent operation probability is averaged over the distribution of $B_0$. The point $(C,B_{\max})=(100,41)$ satisfies the declared 99.9\% burst-service target with one \SI{1}{ms} refill interval.
+
+The footprint comparison uses an intentionally explicit accounting rule. Each networking channel costs six standard QCCD zones, and each stored Bell half is charged one standard zone. Thus
+\begin{align}
+ A_{\rm unbuf}&=6(133)=798,\\
+ A_{\rm buf}&=6(100)+41=641,
+\end{align}
+so the nominal footprint reduction is $(798-641)/798=19.7\%$. More generally, if one cached Bell half costs $a_B$ standard zones, the buffered design is smaller provided
+\begin{equation}
+ 600+41a_B<798,
+\end{equation}
+which yields $a_B<198/41=4.83$. The conclusion therefore survives any memory implementation cheaper than this explicit break-even value.
+
+\section{Freshness calculation}
+Let $v_0$ be Bell visibility immediately after distillation and suppose stored visibility decays exponentially,
+\begin{equation}
+ v(a)=v_0e^{-a/T_B}.
+\end{equation}
+If the encoded interface requires $v\ge v_{\min}$, then every consumed pair must satisfy
+\begin{equation}
+ a\le a_{\max}=T_B\log(v_0/v_{\min}).
+\end{equation}
+For a FIFO cache, the age distribution can be propagated together with the inventory state by replacing scalar cache occupancy with age-binned inventory. The main-text bound is deliberately implementation independent: any policy whose consumed-age tail exceeds $a_{\max}$ violates the declared interface quality, regardless of how favorable its count-only service probability appears.
+
+\section{Handoff lower bound}
+Suppose one handoff lane transfers one Bell pair in time $t_{\rm hand}$. In a deadline window $\tau$, $L$ lanes transfer at most $L\lfloor\tau/t_{\rm hand}\rfloor$ pairs. Ignoring integrality in the per-lane count gives the necessary bound
+\begin{equation}
+ L\ge\left\lceil\frac{bt_{\rm hand}}{\tau}\right\rceil.
+\end{equation}
+Using only the source architecture's \SI{100}{\micro s} transport contribution already yields the 8-lane qLDPC and 73-lane surface-code lower bounds quoted in the main text. Mapping conflicts, interface gates, or measurements can only increase the required width.
+
+\section{Shared-domain model}
+Partition $C=Dm$ channels into $D$ independent domains of size $m$. Let domain indicator $Z_d\sim\mathrm{Bernoulli}(1-q_d)$ and active-channel count
+\begin{equation}
+ Y=m\sum_{d=1}^{D}Z_d.
+\end{equation}
+Then
+\begin{align}
+ \E Y &= C(1-q_d),\\
+ \operatorname{Var}(Y)&=m^2Dq_d(1-q_d)=Cm q_d(1-q_d).
+\end{align}
+At fixed $C$ and $q_d$, larger common-mode domains preserve the mean while inflating variance linearly in $m$. To calculate service, condition the calibrated counting process on $Y$ and average over the binomial distribution of active domains. The illustrative qLDPC stress test in the main text uses $q_d=10^{-3}$ per round and searches over $D$; approximately sixteen independent domains are required to recover the declared $10^{-3}$ operation-outage target at the 133-channel point.
+
+\section{Hardware shadow-price protocol}
+For physical parameter $\theta$, define $C_*(\theta)$ as the smallest integer channel count satisfying the same service-level objective. A finite-difference shadow price is
+\begin{equation}
+ \Pi_\theta=-\frac{C_*(\theta')-C_*(\theta)}{\theta'-\theta},
+\end{equation}
+or, more directly for a proposed device improvement, the integer channel saving
+\begin{equation}
+ \Delta C_\theta=C_*(\theta)-C_*(\theta').
+\end{equation}
+All other device and workload parameters are held fixed. The quoted twofold detection and shuttling improvements save 33 and 16 channels near the declared qLDPC point. A perturbation to a stage outside the active pipeline bottleneck can have zero channel value even if that stage becomes physically faster. This conditional sensitivity is the reason the manuscript uses the term \emph{service-qualified hardware shadow price}.
+
+\section{Reproducibility checklist}
+A reproduction of every main-text number requires the following sequence:
+\begin{enumerate}
+\item instantiate the source-paper working-point parameters and finite raw-pair buffer;
+\item verify the stationary single-channel rate against the approximately $858\,\mathrm{s}^{-1}$ source value;
+\item record the empirical/discrete finite-window output distribution for the declared deadline;
+\item convolve or simulate $C$ independent channels and invert the batch-service probability by integer search;
+\item for cache results, build the finite inventory transition matrix and propagate it over the declared number of rounds;
+\item for refill, average over the refill-generated initial inventory;
+\item apply the explicit zone-accounting rule, freshness inequality, handoff bound, and shared-domain mixture separately rather than folding them into an unspecified correction factor.
+\end{enumerate}
+This procedure keeps calibration, provisioning, and architectural extrapolation auditable and prevents a downstream service assumption from being mistaken for a measured trapped-ion parameter.
+
+\begin{thebibliography}{10}
+\bibitem{Knollmann2026} F. W. Knollmann, D. P. Nadlinger, J. Blue, S. M. Corsetti, S. J. Bishop, A. R. Martinez, J. Notaros, C. D. Bruzewicz, R. McConnell, and I. L. Chuang, Remote entanglement need not be the bottleneck for modular trapped-ion quantum computing, arXiv:2607.18387v2 (2026).
+\end{thebibliography}
+\end{document}
