@@ -1,0 +1,131 @@
+\documentclass[aps,prx,reprint,superscriptaddress,nofootinbib,longbibliography,floatfix]{revtex4-2}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,mathtools,bm,amsthm}
+\usepackage{booktabs,array,microtype,hyperref}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\F}{\mathbb F_2}\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\newcommand{\codim}{\operatorname{codim}}
+\begin{document}
+\title{High-Rate qLDPC Gates over Heralded Interconnects: QEC-Aware Entanglement Service}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+
+\begin{abstract}
+High-rate quantum low-density parity-check (qLDPC) codes can process many logical qubits per block, but a modular processor may supply the physical interactions of one logical gate only through individually heralded entanglement. We formulate the resulting cross-layer problem as a QEC-aware entanglement service. For a partial physical CNOT map between arbitrary CSS blocks, we derive the exact stabilizer rank unavailable to intramodule measurements. For ordinary transversal CNOT this becomes the sum of two binary-matroid connectivity functions, which implies ordering-independent syndrome-area and peak-width bounds. Complete-syndrome checkpoints obey a burst law, while any causal addressed scheduler that suppresses the ready-set syndrome debt must buffer successful Bell resources. We distinguish static coordinate addressing, pre-heralding retargetability, and post-heralding fungibility and show that ordinary pre-heralding retargetability is already sufficient to remove the logarithmic straggler overhead of statically dedicated coordinates. Conversely, under independent addressed exponential arrivals, asynchronous ASAP execution has only linear physical-time syndrome exposure for asymptotically good bounded-check-weight CSS families despite quadratic discrete serial area. We reconstruct the public $[[81,3,5]]$--$[[54,2,6]]$ transversal-dimension-jump pair and obtain a reproducible coordinate order with peak deficit 12, compared with 48--51 for natural traversals. Finally, matched deferred-decoding tests on a public $[[18,2,3]]$ bivariate-bicycle component show why syndrome deficit is not itself a logical-error objective: finite Bell memory can make a lower-frontier scheduler perform substantially worse. The resulting object is a service contract among code geometry, addressability, successful-ebit memory, and decoder timing rather than a no-go theorem for high-rate gates.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+High-rate qLDPC codes change the resource accounting of fault-tolerant computation: one block can encode $k=\Theta(n)$ logical qubits while retaining sparse checks. Logical-operation proposals now exploit this structure through batching, surgery, code switching, and transversal primitives. These constructions are usually described as completed circuit gadgets. A modular machine adds another layer: a remote physical interaction is mediated by an entangled resource whose generation is heralded, stochastic, address-constrained, and potentially memory limited.
+
+This paper asks a narrower question than whether a completed high-rate gadget is fault tolerant. Suppose a nonlocal CNOT layer is only partially realized. Which stabilizer information is no longer obtainable using measurements local to the two modules, and what interconnect resources are required to control that partial state? The answer produces an exact QEC-facing service variable before any decoder model is chosen.
+
+The scope is deliberately separated from high-rate surgery and other gadgets whose intermediate stabilizer groups differ from a partial physical CNOT map. Those operations are natural future consumers of the service framework, but the invariant proved here is not silently transferred to them. This distinction matters because a finite-code decoder test below gives a negative result: reducing instantaneous syndrome deficit can worsen logical performance when the Bell resources used to enforce that ordering age in memory. The invariant is therefore an information-access and resource quantity, not a surrogate logical-error rate.
+
+\section{Partial homomorphic-CNOT invariant}
+Let CSS block $A$ have binary stabilizer spaces $C_X^A,C_Z^A\subseteq\F^{n_A}$ and block $B$ have $C_X^B,C_Z^B\subseteq\F^{n_B}$. A physical CNOT layer from $A$ to $B$ is represented by a binary partial-matching matrix $L\in\F^{n_B\times n_A}$ satisfying the full homomorphism conditions
+\begin{equation}
+L(C_X^A)\subseteq C_X^B,\qquad L^T(C_Z^B)\subseteq C_Z^A.
+\end{equation}
+For an executed coordinate set $S$, let $L_S$ retain only those CNOT edges and define
+\begin{align}
+K_X^A(S)&=\{x\in C_X^A:L_Sx\in C_X^B\},\\
+K_Z^B(S)&=\{z\in C_Z^B:L_S^Tz\in C_Z^A\}.
+\end{align}
+
+\begin{theorem}[Partial-CNOT syndrome deficit]
+The rank of stabilizer information unavailable to measurements confined to the two separate modules after applying $L_S$ is
+\begin{equation}
+\delta_{A\to B}(S)=
+\codim_{C_X^A}K_X^A(S)+
+\codim_{C_Z^B}K_Z^B(S).
+\label{eq:rect}
+\end{equation}
+\end{theorem}
+
+The proof follows by propagating the CSS stabilizer generators through $L_S$ and quotienting by the subgroups whose propagated supports remain entirely within one module. Equation~\eqref{eq:rect} handles unequal block sizes and therefore includes homomorphic code-switching and dimension-jump primitives.
+
+For identical CSS blocks and ordinary coordinatewise transversal CNOT, define the binary-matroid connectivity function of a stabilizer space $C$ by
+\begin{equation}
+\lambda_C(S)=r_C(S)+r_C(S^c)-r_C([n]).
+\end{equation}
+Then
+\begin{equation}
+\delta_Q(S)=\lambda_{C_X}(S)+\lambda_{C_Z}(S).
+\label{eq:matroid}
+\end{equation}
+Classical minimal-span/trellis identities immediately convert this static invariant into ordering-independent constraints.
+
+\begin{theorem}[Serial width and area]
+For every coordinate order $\pi$ of an $[[n,k]]$ CSS code with $X$- and $Z$-distances $d_X,d_Z$,
+\begin{equation}
+A_Q(\pi)\ge k(d_X+d_Z-2),
+\end{equation}
+and hence
+\begin{equation}
+W_Q(\pi)\ge \left\lceil\frac{k(d_X+d_Z-2)}{n-1}\right\rceil.
+\end{equation}
+Thus asymptotically good CSS families have $\Omega(n^2)$ discrete prefix area and $\Omega(n)$ peak deficit under every serial coordinate ordering.
+\end{theorem}
+
+\section{Checkpoint and buffer service laws}
+A controller may tolerate partial syndrome for some time but require bounded-deficit checkpoints. If at most $b$ physical CNOT coordinates are executed between checkpoints and the deficit at every checkpoint is at most $w$, then Eq.~\eqref{eq:matroid} is two-Lipschitz under a one-coordinate change: each of the two matroid-connectivity terms changes by at most one. Therefore any unavoidable peak $W_Q^*$ that lies between two such checkpoints satisfies
+\begin{equation}
+\boxed{w+2b\ge W_Q^*.}
+\end{equation}
+For an asymptotically good family, sublinear checkpoint deficit still requires an extensive coordinate burst between checkpoints; the factor of two is fixed by the two CSS sectors rather than absorbed into the definition of $b$.
+
+A different controller can wait for Bell resources to herald and choose whether to execute immediately. Let $R(t)$ be the set of ready coordinates, $S(t)\subseteq R(t)$ the executed set, and $B(t)=|R(t)\setminus S(t)|$ the number of successful Bell pairs held in memory. Connectivity is 2-Lipschitz under coordinate changes, so
+\begin{equation}
+\delta_Q(S(t))\ge \delta_Q(R(t))-2B(t).
+\end{equation}
+Integrating in time yields the pathwise conservation law
+\begin{equation}
+D+2\mathcal B\ge \mathcal R,
+\end{equation}
+where $D=\int\delta_Q(S(t))dt$, $\mathcal B=\int B(t)dt$, and $\mathcal R=\int\delta_Q(R(t))dt$. A scheduler can suppress syndrome debt below the ASAP-ready-set trajectory only by accumulating successful-ebit qubit-time. If Bell visibility decays as $e^{-t/T_B}$, that qubit-time acquires an explicit physical fidelity cost.
+
+\section{Addressability and physical time}
+Equal average Bell-pair rate does not define equal service. Under static address-bound generation, each unfinished coordinate owns a fixed number of raw modes. Completing all $m$ coordinates by deadline $D$ with failure probability at most $\epsilon$ incurs the familiar fork--join straggler factor, requiring total raw mode budget
+\begin{equation}
+C=\Theta\!\left(\frac{m\log(m/\epsilon)}{Dp}\right)
+\end{equation}
+in the small-$p$ regime.
+
+If raw modes may be retargeted to unfinished coordinates after each failed attempt, the service process changes. In continuous time, a bank of $C$ identical pre-heralding-retargetable modes generates useful successes at aggregate rate $C\mu$ until $m$ coordinates have completed. The completion time is Erlang,
+\begin{equation}
+T_m\sim \mathrm{Erlang}(m,C\mu),
+\end{equation}
+and the provisioning law is throughput-limited, $C=\Theta[m/(\mu D)]$ at fixed deadline reliability. Post-heralding fungibility is stronger than necessary to remove the logarithm.
+
+There is a second scaling distinction. Under independent addressed exponential arrivals with rate $\mu$ per coordinate, the execution order under ASAP is uniformly random but late order-statistic intervals are short. If $\bar\delta_j$ is the mean deficit over subsets of size $j$,
+\begin{equation}
+\E R=\frac1\mu\sum_{j=0}^{n-1}\frac{\bar\delta_j}{n-j}.
+\end{equation}
+For asymptotically good bounded-check-weight CSS families this is $\Theta(n/\mu)$. The code therefore forces a quadratic \emph{discrete} serial area without forcing quadratic \emph{physical time} when sufficiently parallel independently addressed heralding is available.
+
+\section{Public finite-code case studies}
+The public transversal-dimension-jump construction of Li, Preskill, and Xu contains a $[[81,3,5]]$ component and a $[[54,2,6]]$ component linked by a clean homomorphic CNOT embedding. Reconstructing the released matrices independently verifies the relevant distances and reduces Eq.~\eqref{eq:rect} exactly to the component-code syndrome profile. Two natural coordinate traversals give peak deficits 48 and 51. A deterministic reproducible heuristic order gives peak 12; random orders concentrate near the high-frontier regime. The result shows that finite scheduling geometry matters even though the asymptotic converse cannot be removed.
+
+We then perform the adversarial test the structural theory demands. On a public $[[18,2,3]]$ bivariate-bicycle component, compare ASAP/deferred decoding with a finite-buffer priority scheduler selected to lower checkpoint deficit. With finite Bell memory, the low-frontier policy can produce more than an order-of-magnitude larger decoded block-failure probability. A smaller explicit syndrome-extraction-circuit test preserves the sign. When Bell memory is made effectively perfect, the separation collapses. The failure mechanism is therefore the resource substitution predicted by the buffer law: a controller buys lower syndrome deficit using older successful Bell resources.
+
+\section{Discussion and claim boundary}
+The paper establishes an exact interface between a partial CSS CNOT and a heralded interconnect. It does not establish that large deficit is intrinsically harmful, nor that every high-rate logical gadget has the same invariant. The correct systems objective is multi-dimensional: completion time, unavailable syndrome, Bell-memory exposure, raw entanglement opportunities, and decoder information.
+
+This resolves two apparent contradictions. First, extensive serial width is compatible with linear asynchronous physical-time exposure when many coordinates progress in parallel. Second, a controller that reduces width can still worsen logical performance because it changes the age distribution of successful Bell resources. The service contract is therefore not a single scalar bottleneck; it specifies the choices available to the code and the costs of exercising them.
+
+\section{Conclusion}
+High-rate qLDPC operations remain compatible with probabilistic modular interconnects only if the interconnect is characterized at the granularity the code can distinguish. The exact partial-CNOT syndrome deficit supplies that code-side state. Addressability controls the raw-service scaling, successful-ebit memory controls causal reordering, and decoder timing determines whether temporary syndrome loss is benign. These laws provide a common interface for comparing distributed logical-gate constructions without assuming deterministic connectivity.
+
+\begin{thebibliography}{20}
+\bibitem{Bravyi2024} S. Bravyi \emph{et al.}, High-threshold and low-overhead fault-tolerant quantum memory, \emph{Nature} \textbf{627}, 778--782 (2024), doi:10.1038/s41586-024-07107-7.
+\bibitem{LiPreskillXu2025} C. Li, J. Preskill, and Q. Xu, Transversal dimension jump for product qLDPC codes, arXiv:2510.07269 (2025).
+\bibitem{Zheng2025} G. Zheng, L. Jiang, and Q. Xu, High-Rate Surgery: towards constant-overhead logical operations, arXiv:2510.08523 (2025).
+\bibitem{Ataides2025} J. P. Bonilla Ataides \emph{et al.}, Constant-Overhead Fault-Tolerant Bell-Pair Distillation using High-Rate Codes, \emph{Phys. Rev. Lett.} \textbf{135}, 130804 (2025).
+\bibitem{Berthusen2025} N. Berthusen, S. J. S. Tan, E. Huang, and D. Gottesman, Adaptive Syndrome Extraction, \emph{PRX Quantum} \textbf{6}, 030307 (2025).
+\bibitem{Distributed2026} S. Chandra \emph{et al.}, Distributed Quantum Error Correction with Bivariate Bicycle Codes in a Modular Architecture, arXiv:2605.04663 (2026).
+\end{thebibliography}
+\end{document}
