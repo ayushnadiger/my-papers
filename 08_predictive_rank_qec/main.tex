@@ -1,0 +1,287 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.94in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,bm,mathtools}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue!55!black,citecolor=blue!55!black,urlcolor=blue!55!black}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+
+\title{Predictive Rank as a Circuit-Conditioned Memory Witness\\for Quantum Error-Correction Syndrome Records}
+\author{Ayush Nadiger\\University of Massachusetts Amherst\\\texttt{ayushnadiger@umass.edu}}
+\date{August 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Repeated quantum-error-correction (QEC) circuits produce syndrome streams with memory from both the known circuit and the unknown noise process. We ask what a finite observed record can certify without assigning physical meaning to an arbitrary internal realization. For a selected past--future word block $H^{(\ell)}$, let $\rho_\Gamma$ be the operator-Schmidt rank of the contracted composed process across a past--future cut $\Gamma$ of the selected detector light cone. We prove
+\[
+\rank H^{(\ell)}\le \rho_\Gamma.
+\]
+This first inequality is representation independent for a fixed composed process tensor: $\rho_\Gamma$ is the minimal exact linear cut dimension and is invariant under invertible tensor-network gauge transformations. If one additionally chooses a circuit/noise factorization with known circuit separator dimension $\kappa_\Gamma$ and crossed noise-process bond dimensions $\chi_e$, then
+\[
+\rho_\Gamma\le \kappa_\Gamma\prod_{e\in\Gamma_{\rm noise}}\chi_e.
+\]
+Thus syndrome rank universally lower-bounds composed-process cut complexity, while conversion to a latent-noise or environment-memory statement is model-class conditional. For a one-dimensional spatiotemporal Pauli-process class, if $D_{\min}$ is the least exact temporal bond among compatible realizations, then $\rank H^{(\ell)}\le\kappa_\Gamma D$ for every realization, so a valid rank rejection lower-bounds $D_{\min}$. For a single repeated stabilizer detector we compute $\kappa_\Gamma=2$. A controlled two-state correlated-noise example saturates the resulting rank-four bound and, with $10^5$ independent six-event records, rejects rank at most two using a conservative distribution-free threshold.
+
+We develop finite-sample tests with an explicit falsification interpretation: rejection of one finite block rules out global predictive rank at most $r$, whereas non-rejection at finitely many horizons does not certify the infinite process. For independent windows, empirical Frobenius distance to the rank-$r$ variety yields matched $\Theta(\epsilon^{-2}\log(1/\delta))$ sample complexity for separated alternatives. We also state mixing extensions and the conditions under which they fail. Finally, we separate certified rank tests from empirical diagnostics and conditional noisy-circuit model checks. On two public distance-5 surface-code records totaling $10^5$ shots, the largest circuit-relative discrepancy occurs on the same detector track in both memory bases and persists across tested horizons and acquisition halves. This is a finite-horizon mismatch with the supplied circuit model, not identification of a microscopic mechanism.
+\end{abstract}
+
+\section{Introduction}
+Repeated syndrome extraction is both an error-correction primitive and a high-bandwidth probe of a quantum processor. Detector-event correlations are used to fit Pauli noise, hidden-state models, and correlated decoders; recurrent and transformer-like decoders can exploit long temporal structure once an architecture has been chosen \cite{Varbanov,Bausch}. A logically prior question is whether a finite observed record is compatible with a stated amount of predictive memory at all.
+
+For a discrete process $Y_t$ taking values in a finite alphabet $\mathcal S$, let $U$ be a finite past word and $V$ a finite future word. The corresponding probability block is
+\begin{equation}
+H_{u,v}^{(\ell)}=\Prob(U=u,V=v).
+\label{eq:hankel}
+\end{equation}
+Low-rank Hankel structure is classical in hidden Markov models, observable-operator models, and predictive-state representations \cite{Jaeger,Littman,Hsu}. Our use is deliberately one-sided. A rank violation in one finite block falsifies every process whose corresponding exact predictive representation has smaller rank. Acceptance does not establish hidden-Markov membership, identify a unique state model, or determine the rank of the infinite process.
+
+The QEC setting adds a second issue. The observed process is produced by a known repeated circuit coupled to an unknown noise process. The circuit itself carries state across time and can create predictive rank even when the environment is memoryless. Therefore an observed rank cannot be interpreted as ``environment memory'' without first accounting for the circuit separator. We solve this by making a two-level statement. First, observable rank lower-bounds an intrinsic operator-Schmidt cut rank of the \emph{composed} process. Second, after a circuit/noise factorization is declared, that intrinsic rank is upper-bounded by a product of known circuit and chosen noise bond dimensions.
+
+This ordering matters. The first inequality is representation independent. The second is useful for device interpretation but only inside its declared model class. In particular, a nonminimal matrix-product representation cannot be read as a unique physical memory dimension.
+
+\section{Finite predictive blocks}
+Let $Y_t\in\mathcal S$. For a horizon $\ell$, define past and future words
+\[
+U=(Y_{t-\ell+1},\ldots,Y_t),\qquad V=(Y_{t+1},\ldots,Y_{t+\ell}).
+\]
+The $|\mathcal S|^\ell\times|\mathcal S|^\ell$ matrix $H^{(\ell)}$ is given by Eq.~\eqref{eq:hankel}. Its rank is an observable property of the finite joint law.
+
+\begin{proposition}[Classical hidden-state bound]
+If $(Y_t)$ is generated by an HMM with $r$ hidden states, then every finite block $H^{(\ell)}$ has rank at most $r$.
+\end{proposition}
+\begin{proof}
+Let $T_y\in\mathbb R^{r\times r}$ be observation-labelled transition operators, $T_u$ their product along word $u$, $\pi$ the initial hidden-state distribution, and $\mathbf1$ the all-ones vector. Then
+\[
+H_{u,v}=\pi^\top T_uT_v\mathbf1=(\pi^\top T_u)(T_v\mathbf1),
+\]
+so $H=AB$ through an inner dimension $r$.
+\end{proof}
+
+The proposition is standard realization theory. We use it only to interpret a finite rank rejection as a falsification of a low-dimensional predictive model.
+
+\section{Circuit light cones and intrinsic cut rank}
+Fix a selected set of syndrome outputs and a past--future split. Marginalize all unselected outcomes and contract tensors outside the backward causal light cone of those outputs. Let $\Upsilon_L$ denote the resulting composed process tensor. Across a past--future cut $\Gamma$, view $\Upsilon_L$ as an element of a Hilbert--Schmidt tensor product of the past-side and future-side operator spaces and define
+\begin{equation}
+\rho_\Gamma=\operatorname{OSR}_\Gamma(\Upsilon_L),
+\label{eq:rho}
+\end{equation}
+the operator-Schmidt rank across the cut. Equivalently, $\rho_\Gamma$ is the rank of an operator-basis flattening. It is invariant under invertible gauge changes internal to either tensor-network representation and equals the smallest exact linear bond dimension across that bipartition.
+
+\begin{theorem}[Intrinsic causal-cut bound]
+For every finite selected syndrome block,
+\begin{equation}
+\boxed{\rank H^{(\ell)}\le\rho_\Gamma.}
+\label{eq:intrinsic}
+\end{equation}
+\end{theorem}
+\begin{proof}
+Choose an operator-Schmidt decomposition
+\[
+\Upsilon_L=\sum_{j=1}^{\rho_\Gamma}A_j\otimes B_j.
+\]
+Every past-word probability functional acts only on the past side and every future-word functional only on the future side. Hence
+\[
+H_{u,v}=\sum_{j=1}^{\rho_\Gamma}a_j(u)b_j(v),
+\]
+which is a factorization through dimension $\rho_\Gamma$.
+\end{proof}
+
+\subsection{Conditional circuit/noise factorization}
+Now choose a particular tensor-network realization. Let the known circuit/detector-system indices crossed by $\Gamma$ have total exact dimension $\kappa_\Gamma$ after all available contractions and conditioning, and let the crossed noise bonds have dimensions $\{\chi_e\}$. Then any such realization factors the composed process through at most
+\[
+\kappa_\Gamma\prod_{e\in\Gamma_{\rm noise}}\chi_e
+\]
+states.
+
+\begin{corollary}[Two-level cut bound]
+\begin{equation}
+\boxed{\rank H^{(\ell)}\le\rho_\Gamma\le\kappa_\Gamma\prod_{e\in\Gamma_{\rm noise}}\chi_e.}
+\label{eq:twolevel}
+\end{equation}
+\end{corollary}
+
+The left inequality is intrinsic to the fixed composed process. The right inequality is conditional on the chosen factorization. This distinction prevents a tensor-network gauge or an intentionally oversized noise bond from being mistaken for physical memory.
+
+\section{Spatiotemporal Pauli processes and minimum compatible memory}
+A useful specialization is a one-dimensional spatiotemporal Pauli process (SPP), in which Pauli trajectories are represented by a temporal matrix-product process with bond dimension $D$. Define
+\[
+D_{\min}^{\rm SPP}=\min\{D:\text{an exact SPP realization is compatible with the observed process and declared circuit}\}.
+\]
+For every compatible realization, Eq.~\eqref{eq:twolevel} gives
+\begin{equation}
+\rank H^{(\ell)}\le\kappa_\Gamma D.
+\label{eq:spp}
+\end{equation}
+Therefore a certified lower bound on rank implies
+\begin{equation}
+D_{\min}^{\rm SPP}\ge\left\lceil\frac{\rank H^{(\ell)}}{\kappa_\Gamma}\right\rceil.
+\end{equation}
+If the model additionally comes from a finite quantum environment with Hilbert dimension $d_E$ and process bond bounded by $d_E^2$, then the same lower bound implies $d_E\ge\sqrt{D_{\min}}$. That statement is explicitly conditional on the finite-environment model class.
+
+\section{A repeated stabilizer detector has circuit factor two}
+Consider a single repeated parity check with interval data bit $A_t$, measurement fault $B_t$, and detector event
+\begin{equation}
+D_t=A_t\oplus B_{t-1}\oplus B_t.
+\label{eq:detector}
+\end{equation}
+Across a temporal cut, the only circuit variable that must be transmitted from past to future is $B_t\in\{0,1\}$. Hence $\kappa_\Gamma\le2$. The bound is tight whenever both boundary values occur with positive probability and induce distinct future laws.
+
+\begin{proposition}[Single-track circuit rank]
+For a nondegenerate repeated stabilizer detector of the form \eqref{eq:detector}, the exact circuit separator dimension is
+\begin{equation}
+\boxed{\kappa_\Gamma=2.}
+\end{equation}
+\end{proposition}
+\begin{proof}
+Conditioning on $B_t$ separates past and future, giving a factorization through two boundary states. If both values have nonzero probability and future detector distributions differ between them, no one-dimensional separator can reproduce the joint distribution.
+\end{proof}
+
+This is the simplest example of why circuit memory cannot be set to one by fiat even when the underlying noise intervals are independent.
+
+\section{Worked rank-four memory certificate}
+To demonstrate that the factor two is operationally nontrivial, consider a two-state latent environment $Z_t\in\{0,1\}$ with transition matrix
+\begin{equation}
+T_Z=\begin{pmatrix}0.985&0.015\\0.017&0.983\end{pmatrix}.
+\end{equation}
+Conditional interval-toggle and measurement-flip probabilities are
+\begin{equation}
+p_A=(0.010,0.390),\qquad p_B=(0.085,0.323).
+\end{equation}
+Given $Z_t$, the local bits are independent and the observed detector follows Eq.~\eqref{eq:detector}. The hidden linear state $(Z_t,B_t)$ has four values, consistent with the separator bound $2D=4$ for $D=2$.
+
+For $\ell=3$, exact contraction gives the leading singular values
+\begin{equation}
+\sigma(H^{(3)})=(0.2842033,\;0.0507590,\;0.0131136,\;0.0001547,\;<4\times10^{-18},\ldots).
+\end{equation}
+Thus the exact block rank is four and the population Frobenius distance to rank two is
+\begin{equation}
+d_2=0.0131145.
+\end{equation}
+A circuit-only control obtained by setting the environment bond to $D=1$ while retaining nonzero interval and measurement faults has exact rank two, so the circuit factor is not merely notational.
+
+With $N=100{,}000$ independent six-event records from the stationary $D=2$ model, a fixed-seed realization gives
+\[
+d_2(\widehat P)=0.0124538,
+\]
+while the conservative 5\% distribution-free threshold described below is $b_N(0.05)=0.0086356$. The rank-$\le2$ null is therefore rejected. Inside the declared SPP/finite-environment model class this certifies
+\[
+D_{\min}^{\rm SPP}\ge2,\qquad d_{E,\min}\ge2.
+\]
+
+\section{Finite-sample rank falsification}
+Let $P$ be the exact joint past--future distribution and $\widehat P$ its empirical frequency matrix from $N$ independent windows. Define
+\begin{equation}
+d_r(M)=\inf_{\rank Q\le r}\norm{M-Q}_F
+=\left(\sum_{j>r}\sigma_j(M)^2\right)^{1/2}.
+\label{eq:dr}
+\end{equation}
+The second equality is Eckart--Young.
+
+For a multinomial empirical distribution, vectorizing the table gives a probability vector. A Hilbert-space Hoeffding bound yields, for all $\delta\in(0,1)$,
+\begin{equation}
+\Prob\!\left(\norm{\widehat P-P}_F>b_N(\delta)\right)\le\delta,
+\end{equation}
+with a dimension-free threshold of order
+\begin{equation}
+b_N(\delta)=O\!\left(\sqrt{\frac{\log(1/\delta)}{N}}\right).
+\end{equation}
+Because $d_r$ is one-Lipschitz in Frobenius norm,
+\begin{equation}
+|d_r(\widehat P)-d_r(P)|\le\norm{\widehat P-P}_F.
+\end{equation}
+
+\begin{theorem}[Distribution-free rank test]
+Under independent windows and the null $\rank P\le r$, rejecting whenever
+\begin{equation}
+d_r(\widehat P)>b_N(\delta)
+\end{equation}
+has type-I error at most $\delta$.
+\end{theorem}
+
+\begin{corollary}[Separated-alternative sample complexity]
+If $d_r(P)\ge\epsilon$, then for a suitable universal constant $C$,
+\begin{equation}
+N\ge C\epsilon^{-2}\log\frac1\delta
+\end{equation}
+suffices for power at least $1-\delta$.
+\end{corollary}
+
+The scaling is optimal.
+
+\begin{theorem}[Matched lower bound]
+There is a stationary binary family whose distance from the rank-one variety is $\Theta(\epsilon)$ and for which any test distinguishing the rank-one null from the alternative with constant error requires $N=\Omega(\epsilon^{-2})$ independent windows. With error target $\delta$, the usual logarithmic factor is necessary.
+\end{theorem}
+\begin{proof}[Proof sketch]
+Use a $2\times2$ probability matrix obtained by adding a signed rank-two perturbation of amplitude $\epsilon$ to the independent fair-bit law. The singular tail is $\Theta(\epsilon)$ while one-sample KL divergence is $\Theta(\epsilon^2)$. Standard testing lower bounds give the claim.
+\end{proof}
+
+\subsection{What rejection and non-rejection mean}
+If an infinite stationary process had global predictive rank at most $r$, every finite Hankel block would have rank at most $r$. Therefore rejection of any valid finite block falsifies global rank at most $r$. The converse is false: non-rejection at finitely many horizons can reflect inadequate power or memory that becomes visible only at a longer horizon. The test is therefore a one-sided witness.
+
+\section{Dependence extensions and failure modes}
+Independent windows are convenient when an experiment supplies many independent shots. A single long trajectory requires extra assumptions.
+
+If the window process is $\beta$-mixing with coefficients $\beta(k)$, blocked or concentration arguments replace $N$ by an effective sample size controlled by the mixing time. The same Frobenius-distance test remains valid after inflating the confidence radius accordingly. For a finite reversible observed Markov chain, a spectral-gap bound can provide a sharper effective sample size.
+
+These extensions are not automatic. A hidden process can have the same one-step observed transition law as a reversible Markov surrogate and nevertheless retain longer memory. Calibrating a trajectory test from only the observed one-step chain can then be badly anti-conservative. Likewise, slow nonstationary drift can create additional singular directions in pooled word tables even when every local block is memoryless. Stationarity diagnostics and acquisition-block checks are therefore part of the inferential contract, not optional plotting choices.
+
+\section{Practical diagnostics beyond the certified test}
+The distribution-free test can be conservative in sparse word tables. For rank one, a refitted bootstrap can substantially improve practical calibration: estimate the composite-null row and column margins, simulate bootstrap tables from the fitted independent law, refit the null in every bootstrap replicate, and compare the observed statistic to that empirical null. In controlled simulations this corrects the liberal behavior of a naive asymptotic Pearson calibration.
+
+For arbitrary rank, projecting an empirical table onto the low-rank probability variety is a constrained problem, and bootstrap validity depends on local regularity and separation from singular points of that variety. We therefore treat general-rank bootstrap procedures as empirical diagnostics unless their assumptions are separately justified. The certified theorem remains the Frobenius-distance test above.
+
+A third layer uses a supplied noisy circuit model. Here the null is not merely ``rank at most $r$'' but ``the observed finite word law matches the circuit-conditioned reference within its sampling uncertainty.'' Such a discrepancy can localize model failure more sharply, but its interpretation is conditional on the supplied circuit and its fitted parameters.
+
+\section{Circuit-level controls}
+Two controlled numerical experiments illustrate the distinction between circuit-induced and additional latent memory.
+
+First, a distance-15 repetition-code memory with ten rounds provides an independent circuit-level background. A selected-rank tail score is formed after choosing the baseline rank from independent reference checks. Injecting a persistent local correlated mode raises the selected normalized tail by roughly a factor of twelve relative to the circuit reference, and the injected site is the global maximum in each of twenty independent batches. The point of this control is not the particular factor but the ordering: the circuit baseline is learned first, and only excess structure is attributed to the injected mode.
+
+Second, a distance-5 rotated surface-code memory with eight rounds is simulated under three conditions: stationary circuit depolarization, a static per-shot quiet/hot mixture, and a genuine within-shot two-state Markov switching process. Both latent constructions lift the third normalized singular direction relative to the stationary circuit, while within-shot switching produces a smaller effect because the two noise regimes average within a shot. These controls show that low-rank structure can distinguish several kinds of non-iid behavior but does not identify their microscopic cause without a model comparison.
+
+\section{Public surface-code records}
+The current real-device analysis uses two public distance-5, 21-round surface-code memory records, with $50{,}000$ shots in each memory basis. Detector tracks are compared against a supplied noisy-circuit reference. The broad spatial map is exploratory because track statistics are dependent, but the leading site is stable under several retrospective checks.
+
+The largest circuit-relative discrepancy occurs at detector track \texttt{x2\_y5} in both memory bases. Its reported within-basis Benjamini--Hochberg adjusted values remain below $0.05$ even after applying the more conservative Benjamini--Yekutieli harmonic factor for arbitrary dependence, giving approximately
+\[
+q_{\rm BY}\approx0.0082\qquad\text{and}\qquad0.0113
+\]
+for the two bases. The same location remains the leading discrepancy across the tested word horizons and in both acquisition halves.
+
+This is deliberately not described as leakage identification. A finite-horizon mismatch can be caused by leakage, slow calibration drift, correlated Pauli noise omitted by the reference circuit, detector-specific electronics, crosstalk, or another unmodeled process. The rank statistic identifies a persistent predictive discrepancy; microscopic diagnosis requires an enlarged physical model or additional observables.
+
+\section{Discussion}
+The paper separates three statements that are easy to conflate.
+
+First, finite syndrome rank lower-bounds the operator-Schmidt cut rank of the \emph{composed} QEC process. This is the representation-independent statement. Second, after declaring a circuit/noise factorization, the same observed rank can lower-bound the minimum compatible noise-process bond dimension. This is model-class conditional. Third, finite-sample procedures determine whether an observed singular tail is statistically resolved at all. This is a sampling statement.
+
+The circuit factor is essential. A repeated detector can carry a binary boundary variable across a cut even when interval noise is independent, so the circuit-only predictive rank need not be one. Conversely, a tensor-network representation with an unnecessarily large environment bond does not certify physical memory; only a lower bound that holds for \emph{every compatible realization} has that interpretation.
+
+The strongest use of predictive rank is therefore falsification. It can rule out memoryless or low-memory models before a microscopic correlated-noise mechanism is chosen. It can also identify detector locations where a supplied circuit model fails at a reproducible finite horizon. It cannot, by itself, name the hidden mechanism.
+
+\begin{thebibliography}{99}\small
+\bibitem{Jaeger} H.~Jaeger, ``Observable operator models for discrete stochastic time series,'' Neural Comput. \textbf{12}, 1371--1398 (2000).
+\bibitem{Littman} M.~L.~Littman, R.~S.~Sutton, and S.~Singh, ``Predictive representations of state,'' Adv. Neural Inf. Process. Syst. \textbf{14} (2001).
+\bibitem{Hsu} D.~Hsu, S.~M.~Kakade, and T.~Zhang, ``A spectral algorithm for learning hidden Markov models,'' J. Comput. Syst. Sci. \textbf{78}, 1460--1480 (2012).
+\bibitem{Varbanov} B.~Varbanov et al., ``Leakage detection for a transmon-based surface code,'' npj Quantum Inf. \textbf{6}, 102 (2020).
+\bibitem{Bausch} J.~Bausch et al., ``Learning high-accuracy error decoding for quantum processors,'' arXiv preprint (2024).
+\bibitem{ProcessTensor} F.~A.~Pollock et al., ``Operational Markov condition for quantum processes,'' Phys. Rev. Lett. \textbf{120}, 040405 (2018).
+\bibitem{MemoryCost} G.~Chiribella, G.~M.~D'Ariano, and P.~Perinotti, ``Memory effects in quantum channel discrimination,'' Phys. Rev. Lett. \textbf{101}, 180501 (2008).
+\end{thebibliography}
+
+\end{document}
