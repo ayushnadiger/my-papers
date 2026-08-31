@@ -1,0 +1,149 @@
+\documentclass[aps,prx,reprint,superscriptaddress,nofootinbib,longbibliography,floatfix]{revtex4-2}
+\usepackage[T1]{fontenc}\usepackage{amsmath,amssymb,mathtools,amsthm}\usepackage{booktabs,microtype,hyperref,siunitx}
+\newtheorem{theorem}{Theorem}\newtheorem{proposition}[theorem]{Proposition}\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\begin{document}
+\title{Occupancy-Aware Reset Control for Sequential Quantum Repeaters with Exposure-Aged Spin--Photon Interfaces}
+\author{Ayush Nadiger}
+\affiliation{Department of Electrical and Computer Engineering, University of Massachusetts Amherst, Amherst, Massachusetts 01003, USA}
+\date{August 31, 2026}
+
+\begin{abstract}
+Elementary-link generation is often modeled as independent repeated trials with fixed success probability and fidelity. This abstraction fails when optical driving changes the future interface. Silicon T centers provide a concrete motivation: experiments report excitation-driven spectral diffusion, active above-band reset of the charge environment, long-lived nuclear-spin storage, and cavity-enhanced photon collection. We formulate the resulting interface as an exposure-aged renewal process. For a single interface, let $v_j$ be the expected useful reward of the $j$th optical attempt after reset; if $v_1\ge v_2\ge\cdots$, passive waiting is never a rejuvenation action, the optimal stationary reset policy has a single threshold, and finite resetting beats never resetting iff $c<c_{\rm crit}=B/v_\infty$, where $c=\tau_r/\tau_a$ and $B=\sum_j(v_j-v_\infty)$. For $m$ independently resettable emitters sharing one attempt engine, the exact fixed-threshold rate is $R_m(K)=\min\{S_K/(K\tau_a),mS_K/(K\tau_a+\tau_r)\}$. A sequential repeater requires a richer state: timing depends on attempt-specific herald probabilities $p_j$, output value depends on conditional quality weights $w_j$, and reset while occupied additionally acts on stored entanglement through a retention factor $\mu_r$. Exact finite-cutoff optimization produces aggressive-reset, protected-reset, and maintenance-only regimes. In a deliberately cross-device T-center scenario over 5--80 km, aggressive occupied reset requires per-reset stored-state visibility retention near 0.997--0.999, while sufficiently damaging reset removes occupied rejuvenation entirely. These boundaries are experimental targets, not calibrated device predictions. The central hardware question is the quantum channel induced on stored memory by the active reset sequence.
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+A standard repeater link model assigns one success probability, one conditional Bell-state quality, and one attempt duration to every optical trial. That model is appropriate when failed attempts leave the interface statistically unchanged. Several solid-state spin--photon interfaces instead possess slow charge or spectral degrees of freedom driven by the optical sequence itself. The next attempt can then depend on how hard the interface has already been driven.
+
+Silicon T centers make this distinction experimentally concrete. Spectral-diffusion studies resolve excitation-dependent optical broadening. A 2026 p-i-n-waveguide experiment shows that above-band illumination can reset the local charge environment and reports a 3.5-fold narrowing of the median optical linewidth. Separate work demonstrates a 112(12)-ms hydrogen nuclear-spin echo time and a two-nuclear-spin register, while cavity-enhanced T-center experiments report 23\% emitter-to-fiber collection. These measurements do not come from one device, so we use them only to define a hardware-target envelope.
+
+State-aware repeater control itself is established: Markov-decision-process studies optimize repeater actions using stored-link occupancy and age, including explicit memory cutoffs. Our novelty is narrower. The \emph{elementary-link interface} carries an exposure state that changes future attempts, and active reset acts differently before and after quantum information is stored. The controller must therefore track two clocks: optical exposure age and quantum-memory age.
+
+The exact theorem layer below requires only a monotone expected-reward sequence and reset cost. The sequential-repeater calculation then separates herald probabilities from conditional quality. This distinction prevents a generic optical ``utility'' from being used as though it were simultaneously a waiting-time probability and a fidelity weight.
+
+\section{Exposure-aged renewal model}
+Let $j=1,2,\ldots$ index optical attempts after an active reset. For the single-interface renewal problem, attempt $j$ has expected useful reward $v_j\in[0,1]$, with
+\begin{equation}
+v_1\ge v_2\ge\cdots\downarrow v_\infty>0.
+\end{equation}
+The reward can represent accepted-entanglement yield, a success-quality product, or another explicitly declared scalar objective. It need not itself be a herald probability.
+
+One attempt takes time $\tau_a$, one reset takes $\tau_r$, and $c=\tau_r/\tau_a$. We assume passive dark waiting does not improve the exposure state on the timescale of interest. If future measurements reveal dark healing, the model must be extended by a separate wall-clock recovery variable.
+
+\begin{proposition}[Waiting is not rejuvenation]
+If idle evolution changes neither exposure state nor the conditional distribution of future rewards and waiting itself earns no reward, deleting any voluntary idle interval weakly improves completion time without changing the reward sequence. An optimal rejuvenation controller therefore needs only \emph{attempt} and \emph{reset}; waiting may still be imposed by synchronization or shared resources.
+\end{proposition}
+
+\section{Single-interface threshold laws}
+A stationary renewal policy that makes $K$ attempts after each reset has
+\begin{equation}
+S_K=\sum_{j=1}^{K}v_j,
+\qquad
+R_K=\frac{S_K}{K\tau_a+\tau_r}.
+\end{equation}
+
+\begin{theorem}[Unimodal reset threshold]
+For nonincreasing $v_j$,
+\begin{equation}
+R_{K+1}\ge R_K
+\quad\Longleftrightarrow\quad
+\frac{v_{K+1}}{\tau_a}\ge R_K.
+\end{equation}
+The sequence $R_K$ is unimodal. Hence the optimal stationary renewal policy is one finite threshold $K^*$ or the never-reset limit.
+\end{theorem}
+
+Define $d_K=(K+c)v_{K+1}-S_K$. Then
+\begin{equation}
+d_{K+1}-d_K=(K+c+1)(v_{K+2}-v_{K+1})\le0,
+\end{equation}
+so the sign can cross at most once.
+
+There is also an exact no-reset boundary.
+
+\begin{theorem}[Critical reset overhead]
+If $v_j\downarrow v_\infty>0$ and
+\begin{equation}
+B=\sum_{j\ge1}(v_j-v_\infty)<\infty,
+\end{equation}
+then some finite reset threshold strictly outperforms never resetting iff
+\begin{equation}
+\boxed{c<c_{\rm crit}=B/v_\infty.}
+\end{equation}
+\end{theorem}
+The quantity $B$ is the total recoverable fresh-interface bonus. This theorem converts a measured or modeled degradation sequence and reset latency into a control boundary without requiring a repeater model.
+
+\section{Multiplexing and reset concurrency}
+Consider $m$ identical emitters sharing one attempt engine while resets may run independently on emitters not currently being attempted. Under threshold $K$,
+\begin{equation}
+\boxed{R_m(K)=\min\left\{\frac{S_K}{K\tau_a},\frac{mS_K}{K\tau_a+\tau_r}\right\}.}
+\end{equation}
+The first term is attempt-engine capacity and the second is aggregate renewal capacity. Reset downtime is fully hidden precisely when
+\begin{equation}
+\tau_r\le(m-1)K\tau_a,
+\end{equation}
+or
+\begin{equation}
+m\ge\left\lceil1+\frac{c}{K}\right\rceil.
+\end{equation}
+If reset occupies the same serialized engine as an attempt, emitter multiplicity cannot hide that time. The hardware resource is therefore reset \emph{concurrency}, not emitter count alone.
+
+\section{Sequential repeater: probability and quality are distinct}
+Now consider a midpoint repeater using one stateful optical interface sequentially for the two elementary links. The arrival process requires attempt-specific herald probabilities
+\begin{equation}
+p_1,p_2,\ldots,
+\end{equation}
+while the value of a successful herald can depend on separate conditional quality weights
+\begin{equation}
+w_1,w_2,\ldots.
+\end{equation}
+A particular device model may derive both from the same spectral state, but they are not mathematically identified. The single-interface reward could, for example, be $v_j=p_jw_j$; the sequential path probability still uses $p_j$ and $1-p_j$, while the terminal state quality uses $w_j$.
+
+Before the first elementary link succeeds, reset affects only the interface. After success, one remote quantum state is stored while the same interface generates the second link. An occupied reset then both rejuvenates future optical attempts and applies a quantum channel to stored entanglement. We parameterize its visibility retention by $\mu_r\in[0,1]$.
+
+The minimal policy class is
+\begin{equation}
+\pi=(K_{\rm empty},K_{\rm occ},r_{AB},t_{\rm cut}),
+\end{equation}
+where the two thresholds apply before and after occupancy, $r_{AB}$ decides whether to reset between legs, and $t_{\rm cut}$ discards an old first link.
+
+For a successful path $\omega$ with storage time $t_\omega$ and $n_r(\omega)$ occupied resets, the terminal quality factor has the form
+\begin{equation}
+V(\omega)=w_Aw_Be^{-t_\omega/T_2}\mu_r^{n_r(\omega)}.
+\end{equation}
+The path probability is a product of the corresponding $p_j$ and $1-p_j$ factors along the reset-renewed exposure sequence. With finite cutoff, success probability, quality-weighted reward, and expected cycle time are finite exact sums. We optimize a clock-normalized quality-weighted objective over the declared policy class.
+
+\section{T-center-anchored target envelope}
+The exact control laws do not require T-center-specific parameters. To turn them into experimental targets, we construct a deliberately cross-device scenario. Spectral-degradation and reset contrast motivate the exposure dependence; the measured 112-ms nuclear-spin echo time supplies a storage envelope; the measured 23\% cavity-enhanced emitter-to-fiber collection supplies one optical anchor; detector, fiber, preparation, Bell-measurement, and reset-time values are scenario inputs rather than a simultaneous device fit.
+
+For endpoint separation $L$ and a midpoint repeater, we place one elementary attempt on the heralding clock
+\begin{equation}
+\tau_a(L)=t_{\rm prep}+\frac{n_gL}{c_0}.
+\end{equation}
+The reset is local, so $c(L)=\tau_r/\tau_a(L)$ decreases as propagation becomes dominant. Reset time can therefore become cheap in wall-clock units even while repeated occupied-reset damage accumulates directly through $\mu_r^{n_r}$.
+
+The optimized policy exhibits three regimes:
+\begin{enumerate}
+\item \emph{aggressive occupied reset}, with $K_{\rm occ}=1$;
+\item \emph{protected occupied reset}, with $K_{\rm occ}>1$; and
+\item \emph{maintenance only}, where reset remains useful while empty but is never used while entanglement is stored.
+\end{enumerate}
+For a representative microsecond-scale reset scenario over 5--80 km, aggressive occupied reset requires per-reset visibility retention roughly $0.997$--$0.999$. At sufficiently smaller retention, the optimum eliminates occupied reset entirely. These boundaries are outputs of the declared cross-device model and are not measured T-center reset fidelities.
+
+\section{Discussion and claim boundary}
+The interface has two state variables that conventional iid link models collapse. Exposure age determines the distribution of the next optical attempt; memory age and occupancy determine the cost of rejuvenating that interface. Existing repeater-control work already shows that link occupancy and age can matter to scheduling. The new ingredient here is an active stateful interface whose reset decision changes qualitatively once quantum information is stored.
+
+The decisive missing physical measurement is therefore well defined: characterize the quantum channel induced on the stored nuclear register by the same above-band reset sequence that rejuvenates the optical environment. The theory does not infer this channel. It predicts the retention ranges at which the optimal network policy changes.
+
+\section{Conclusion}
+Stateful spin--photon interfaces require stateful repeater control. Under exposure-driven degradation, passive waiting is not healing; stationary renewal reduces to a reset threshold; multiplexing hides reset latency only when reset is independently concurrent; and a sequential repeater must separate herald probability, conditional quality, exposure age, and occupied-memory damage. The relevant hardware specification is not reset time alone but the joint optical-rejuvenation and stored-memory channel produced by reset.
+
+\begin{thebibliography}{20}
+\bibitem{Zhang2025} X. Zhang, N. Fiaschi, L. Komza, H. Song, T. Schenkel, and A. Sipahigil, Laser-induced spectral diffusion of T centers in silicon nanophotonic devices, \emph{PRX Quantum} \textbf{6}, 030351 (2025).
+\bibitem{Bowness2025} C. Bowness \emph{et al.}, Laser-Induced Spectral Diffusion and Excited-State Mixing of Silicon T Centers, \emph{PRX Quantum} \textbf{6}, 030350 (2025).
+\bibitem{Reset2026} C. Zhang \emph{et al.}, Resolving and resetting the charge environment of single T-centers in silicon p-i-n waveguides, arXiv:2608.15993 (2026).
+\bibitem{Song2026} H. Song \emph{et al.}, Entanglement of a nuclear spin qubit register in silicon photonics, \emph{Nature Nanotechnology} \textbf{21}, 53--57 (2026).
+\bibitem{Islam2024} F. Islam, C.-M. Lee, S. Harper, M. H. Rahaman, Y. Zhao, N. K. Vij, and E. Waks, Cavity-Enhanced Emission from a Silicon T Center, \emph{Nano Letters} \textbf{24}, 319--325 (2024), doi:10.1021/acs.nanolett.3c04056.
+\bibitem{Inesta2023} A. G. I\~nesta \emph{et al.}, Optimal entanglement distribution policies in homogeneous repeater chains with cutoffs, \emph{npj Quantum Information} \textbf{9}, 46 (2023).
+\end{thebibliography}
+\end{document}
