@@ -2,7 +2,7 @@
 
 This repository is a clean archive of my quantum-information, quantum-hardware, and fault-tolerant-architecture manuscripts.
 
-Each directory contains the manuscript source and a short status note. Public arXiv papers are preserved as canonical records; unpublished manuscripts are review snapshots and may change before submission. Reproducibility code that already has a dedicated repository is linked rather than duplicated wholesale.
+The public arXiv paper is preserved as a canonical record. The six active architecture papers include their current reviewed `main.tex` and `supplement.tex` sources. Background manuscripts 07–09 record the exact latest reviewed source snapshot and public verification provenance; source is mirrored only when it can be transferred without reconstructing or silently changing the retained manuscript. Reproducibility code that already has a dedicated public repository is linked rather than duplicated wholesale.
 
 ## Public preprint
 
@@ -19,11 +19,19 @@ Each directory contains the manuscript source and a short status note. Public ar
 
 ## Background manuscripts
 
-- [`07_repair_identifiability/`](07_repair_identifiability/) — graph-state defect localization, repair identifiability, and diagnostic measurements.
-- [`08_predictive_rank_qec/`](08_predictive_rank_qec/) — **Finite-Horizon Predictive-Rank Tests for Quantum Error-Correction Syndrome Records**.
-- [`09_covariance_geometry_qec/`](09_covariance_geometry_qec/) — **Covariance Geometry of Linearized Quantum Erasure Correction**.
+- [`07_repair_identifiability/`](07_repair_identifiability/) — **Repair Identifiability and Product-Measurement Complexity of Bond Failures in Graph States**, v10 (August 2026). Includes the frozen v10 adversarial audit and citation metadata; full verification code is maintained in the dedicated public repository linked inside.
+- [`08_predictive_rank_qec/`](08_predictive_rank_qec/) — **Predictive Rank as a Circuit-Conditioned Memory Witness for Quantum Error-Correction Syndrome Records**, v8 source snapshot (August 2026).
+- [`09_covariance_geometry_qec/`](09_covariance_geometry_qec/) — **Covariance Geometry of Linearized Quantum Erasure Correction**, August 2026 source snapshot. Includes frozen public verification metadata/output and the canonical verifier link.
 
-The two earlier graph-state cut manuscripts are being treated as one background research line in this archive; they should not be mistaken for two independent current research directions.
+The earlier graph-state cut/localization drafts are treated as one background research line here; the current v10 repair-identifiability manuscript is the archive entry rather than inflating successive drafts into separate papers.
+
+## Source-status convention
+
+- **Canonical public record:** an arXiv identifier is the source of truth.
+- **Mirrored manuscript:** the reviewed TeX source is present in this repository.
+- **Reviewed snapshot record:** the exact retained source filename/version is recorded, but no reconstructed TeX is substituted when the connected archive cannot export raw source safely.
+
+This convention is deliberate: a public archive should not make an older draft or stitched excerpt look like the manuscript that was actually reviewed.
 
 ## Scope
 
