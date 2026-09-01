@@ -36,13 +36,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            latexmk \
             texlive-latex-base \
             texlive-latex-extra \
             texlive-fonts-recommended \
             texlive-science \
             texlive-publishers \
-            texlive-bibtex-extra \
             poppler-utils \
             curl
 
@@ -67,16 +65,22 @@ jobs:
             echo "==> $dir/main.tex"
             (
               cd "$dir"
+              rm -f __archive_build.*
               cat > __archive_build.tex <<'EOF'
           \PassOptionsToPackage{expansion=false}{microtype}
           \input{main.tex}
           EOF
-              latexmk -pdf -file-line-error -halt-on-error -interaction=nonstopmode __archive_build.tex
+              for pass in 1 2 3; do
+                pdflatex -file-line-error -halt-on-error -interaction=nonstopmode __archive_build.tex
+              done
+              if grep -Eq 'Citation .* undefined|There were undefined citations' __archive_build.log; then
+                echo "Undefined citation remains in $dir" >&2
+                exit 1
+              fi
               test -s __archive_build.pdf
               pdfinfo __archive_build.pdf >/dev/null
               mv __archive_build.pdf main.pdf
-              latexmk -C __archive_build.tex || true
-              rm -f __archive_build.tex
+              rm -f __archive_build.aux __archive_build.log __archive_build.out __archive_build.toc __archive_build.tex
             )
           }
 
