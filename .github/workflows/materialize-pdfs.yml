@@ -67,10 +67,16 @@ jobs:
             echo "==> $dir/main.tex"
             (
               cd "$dir"
-              latexmk -pdf -file-line-error -halt-on-error -interaction=nonstopmode main.tex
-              test -s main.pdf
-              pdfinfo main.pdf >/dev/null
-              latexmk -c main.tex || true
+              cat > __archive_build.tex <<'EOF'
+          \PassOptionsToPackage{expansion=false}{microtype}
+          \input{main.tex}
+          EOF
+              latexmk -pdf -file-line-error -halt-on-error -interaction=nonstopmode __archive_build.tex
+              test -s __archive_build.pdf
+              pdfinfo __archive_build.pdf >/dev/null
+              mv __archive_build.pdf main.pdf
+              latexmk -C __archive_build.tex || true
+              rm -f __archive_build.tex
             )
           }
 
