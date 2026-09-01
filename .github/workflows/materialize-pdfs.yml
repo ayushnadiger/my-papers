@@ -24,7 +24,104 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  materialize:
+  paper00:
+    name: Paper 00 - arXiv
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download canonical arXiv PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils curl
+          mkdir -p out
+          curl -A 'Mozilla/5.0' -L --fail --retry 5 --retry-delay 3 \
+            https://arxiv.org/pdf/2608.24770 \
+            -o out/main.pdf
+          test -s out/main.pdf
+          pdfinfo out/main.pdf >/dev/null
+      - name: Upload paper 00
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-00
+          path: out/main.pdf
+          if-no-files-found: error
+
+  compile:
+    name: Paper ${{ matrix.id }} - compile
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: '01'
+            dir: 01_high_rate_qldpc_interconnects
+          - id: '02'
+            dir: 02_2d_hybrid_repeaters
+          - id: '03'
+            dir: 03_trapped_ion_photonic_service
+          - id: '04'
+            dir: 04_gkp_resource_factories
+          - id: '05'
+            dir: 05_reset_aware_spin_photon
+          - id: '06'
+            dir: 06_stochastic_qldpc_factories
+          - id: '07'
+            dir: 07_repair_identifiability
+          - id: '08'
+            dir: 08_predictive_rank_qec
+          - id: '09'
+            dir: 09_covariance_geometry_qec
+    steps:
+      - name: Check out archive
+        uses: actions/checkout@v4
+
+      - name: Install TeX
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            texlive-latex-base \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-science \
+            texlive-publishers \
+            poppler-utils
+
+      - name: Compile ${{ matrix.dir }}/main.tex
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd '${{ matrix.dir }}'
+          rm -f __archive_build.*
+          cat > __archive_build.tex <<'EOF'
+          \PassOptionsToPackage{expansion=false}{microtype}
+          \input{main.tex}
+          EOF
+          for pass in 1 2 3; do
+            echo "pdflatex pass $pass"
+            pdflatex -file-line-error -halt-on-error -interaction=nonstopmode __archive_build.tex
+          done
+          if grep -Eq 'Citation .* undefined|There were undefined citations|Reference .* undefined|There were undefined references' __archive_build.log; then
+            echo 'ERROR: unresolved citation or reference remains after three passes' >&2
+            grep -E 'undefined|Warning' __archive_build.log | tail -n 80 >&2 || true
+            exit 1
+          fi
+          test -s __archive_build.pdf
+          pdfinfo __archive_build.pdf >/dev/null
+          mkdir -p ../artifact
+          cp __archive_build.pdf ../artifact/main.pdf
+
+      - name: Upload paper ${{ matrix.id }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-${{ matrix.id }}
+          path: artifact/main.pdf
+          if-no-files-found: error
+
+  commit:
+    name: Commit exactly ten PDFs
+    needs: [paper00, compile]
     runs-on: ubuntu-latest
     steps:
       - name: Check out archive
@@ -32,143 +129,74 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install TeX and PDF tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            texlive-latex-base \
-            texlive-latex-extra \
-            texlive-fonts-recommended \
-            texlive-science \
-            texlive-publishers \
-            poppler-utils \
-            curl
+      - name: Download compiled PDFs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pdf-*
+          path: artifacts
 
-      - name: Materialize paper 00 from canonical arXiv preprint
+      - name: Install PDF verifier
         shell: bash
         run: |
-          set -euo pipefail
-          mkdir -p 00_trapped_ion_geometry
-          curl -A 'Mozilla/5.0' -L --fail --retry 5 --retry-delay 3 \
-            https://arxiv.org/pdf/2608.24770 \
-            -o 00_trapped_ion_geometry/main.pdf
-          test -s 00_trapped_ion_geometry/main.pdf
-          pdfinfo 00_trapped_ion_geometry/main.pdf >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
 
-      - name: Compile papers 01--09
+      - name: Materialize exactly ten canonical PDFs
         shell: bash
         run: |
           set -euo pipefail
 
-          compile() {
-            dir="$1"
-            echo "==> $dir/main.tex"
-            (
-              cd "$dir"
-              rm -f __archive_build.*
-              cat > __archive_build.tex <<'EOF'
-          \PassOptionsToPackage{expansion=false}{microtype}
-          \input{main.tex}
-          EOF
-              for pass in 1 2 3; do
-                pdflatex -file-line-error -halt-on-error -interaction=nonstopmode __archive_build.tex
-              done
-              if grep -Eq 'Citation .* undefined|There were undefined citations' __archive_build.log; then
-                echo "Undefined citation remains in $dir" >&2
-                exit 1
-              fi
-              test -s __archive_build.pdf
-              pdfinfo __archive_build.pdf >/dev/null
-              mv __archive_build.pdf main.pdf
-              rm -f __archive_build.aux __archive_build.log __archive_build.out __archive_build.toc __archive_build.tex
-            )
-          }
-
-          compile 01_high_rate_qldpc_interconnects
-          compile 02_2d_hybrid_repeaters
-          compile 03_trapped_ion_photonic_service
-          compile 04_gkp_resource_factories
-          compile 05_reset_aware_spin_photon
-          compile 06_stochastic_qldpc_factories
-          compile 07_repair_identifiability
-          compile 08_predictive_rank_qec
-          compile 09_covariance_geometry_qec
-
-      - name: Remove non-paper PDFs and build byproducts
-        shell: bash
-        run: |
-          set -euo pipefail
-          dirs=(
-            01_high_rate_qldpc_interconnects
-            02_2d_hybrid_repeaters
-            03_trapped_ion_photonic_service
-            04_gkp_resource_factories
-            05_reset_aware_spin_photon
-            06_stochastic_qldpc_factories
-            07_repair_identifiability
-            08_predictive_rank_qec
-            09_covariance_geometry_qec
+          declare -A dirs=(
+            [00]='00_trapped_ion_geometry'
+            [01]='01_high_rate_qldpc_interconnects'
+            [02]='02_2d_hybrid_repeaters'
+            [03]='03_trapped_ion_photonic_service'
+            [04]='04_gkp_resource_factories'
+            [05]='05_reset_aware_spin_photon'
+            [06]='06_stochastic_qldpc_factories'
+            [07]='07_repair_identifiability'
+            [08]='08_predictive_rank_qec'
+            [09]='09_covariance_geometry_qec'
           )
-          for d in "${dirs[@]}"; do
-            find "$d" -maxdepth 1 -type f -name '*.pdf' ! -name 'main.pdf' -delete
-            find "$d" -maxdepth 1 -type f \( \
-              -name '*.aux' -o -name '*.bbl' -o -name '*.blg' -o \
-              -name '*.log' -o -name '*.out' -o -name '*.toc' -o \
-              -name '*.fls' -o -name '*.fdb_latexmk' -o -name '*.synctex.gz' \
-            \) -delete
+
+          for id in 00 01 02 03 04 05 06 07 08 09; do
+            d="${dirs[$id]}"
+            src="artifacts/pdf-$id/main.pdf"
+            test -s "$src"
+            mkdir -p "$d"
+            find "$d" -maxdepth 1 -type f -name '*.pdf' -delete
+            cp "$src" "$d/main.pdf"
+            pdfinfo "$d/main.pdf" >/dev/null
           done
-          rm -rf .staging
 
-      - name: Write archive index
-        shell: bash
-        run: |
+          rm -rf .staging artifacts
+
           cat > README.md <<'EOF'
-          # Ayush Nadiger — Paper Archive
+          # Ayush Nadiger - Paper Archive
 
-          This repository contains exactly ten compiled paper PDFs, numbered 00–09. Each numbered directory has one canonical `main.pdf`; source is retained for manuscripts 01–09.
+          This repository contains exactly ten compiled paper PDFs, numbered 00-09. Each numbered directory has one canonical `main.pdf`; source is retained for manuscripts 01-09.
 
-          - `00_trapped_ion_geometry/` — **Geometry-controlled correlated electric-field noise in enclosed ion traps from billiard return spectra** — arXiv:2608.24770.
-          - `01_high_rate_qldpc_interconnects/` — **High-Rate qLDPC Gates over Heralded Interconnects: QEC-Aware Entanglement Service**.
-          - `02_2d_hybrid_repeaters/` — **Correction Exposure and Service Geometry in Sparse Hybrid Quantum Repeater Networks**.
-          - `03_trapped_ion_photonic_service/` — **Fault-Tolerant Service Contracts for Integrated Trapped-Ion Photonic Interconnects**.
-          - `04_gkp_resource_factories/` — **Throughput Is Not Enough: Synchronization and Loss Constraints for GKP-State Factories in High-Rate Photonic Repeaters**.
-          - `05_reset_aware_spin_photon/` — **Occupancy-Aware Reset Control for Sequential Quantum Repeaters with Exposure-Aged Spin–Photon Interfaces**.
-          - `06_stochastic_qldpc_factories/` — **Tanner Frontiers in Stochastic qLDPC Entanglement Factories**.
-          - `07_repair_identifiability/` — **Repair Identifiability and Product-Measurement Complexity of Bond Failures in Graph States**.
-          - `08_predictive_rank_qec/` — **Predictive Rank as a Circuit-Conditioned Memory Witness for Quantum Error-Correction Syndrome Records**.
-          - `09_covariance_geometry_qec/` — **Covariance Geometry of Linearized Quantum Erasure Correction**.
+          - `00_trapped_ion_geometry/` - **Geometry-controlled correlated electric-field noise in enclosed ion traps from billiard return spectra** - arXiv:2608.24770.
+          - `01_high_rate_qldpc_interconnects/` - **High-Rate qLDPC Gates over Heralded Interconnects: QEC-Aware Entanglement Service**.
+          - `02_2d_hybrid_repeaters/` - **Correction Exposure and Service Geometry in Sparse Hybrid Quantum Repeater Networks**.
+          - `03_trapped_ion_photonic_service/` - **Fault-Tolerant Service Contracts for Integrated Trapped-Ion Photonic Interconnects**.
+          - `04_gkp_resource_factories/` - **Throughput Is Not Enough: Synchronization and Loss Constraints for GKP-State Factories in High-Rate Photonic Repeaters**.
+          - `05_reset_aware_spin_photon/` - **Occupancy-Aware Reset Control for Sequential Quantum Repeaters with Exposure-Aged Spin-Photon Interfaces**.
+          - `06_stochastic_qldpc_factories/` - **Tanner Frontiers in Stochastic qLDPC Entanglement Factories**.
+          - `07_repair_identifiability/` - **Repair Identifiability and Product-Measurement Complexity of Bond Failures in Graph States**.
+          - `08_predictive_rank_qec/` - **Predictive Rank as a Circuit-Conditioned Memory Witness for Quantum Error-Correction Syndrome Records**.
+          - `09_covariance_geometry_qec/` - **Covariance Geometry of Linearized Quantum Erasure Correction**.
 
           RA-FEAST and route-optimization work are intentionally not included in this archive.
           EOF
-
-      - name: Verify exactly ten PDFs
-        shell: bash
-        run: |
-          set -euo pipefail
-          files=(
-            00_trapped_ion_geometry/main.pdf
-            01_high_rate_qldpc_interconnects/main.pdf
-            02_2d_hybrid_repeaters/main.pdf
-            03_trapped_ion_photonic_service/main.pdf
-            04_gkp_resource_factories/main.pdf
-            05_reset_aware_spin_photon/main.pdf
-            06_stochastic_qldpc_factories/main.pdf
-            07_repair_identifiability/main.pdf
-            08_predictive_rank_qec/main.pdf
-            09_covariance_geometry_qec/main.pdf
-          )
-
-          for f in "${files[@]}"; do
-            test -s "$f"
-            pdfinfo "$f" >/dev/null
-          done
 
           mapfile -t pdfs < <(find 0[0-9]_* -maxdepth 1 -type f -name '*.pdf' | sort)
           printf '%s\n' "${pdfs[@]}"
           test "${#pdfs[@]}" -eq 10
           test ! -e .staging
+          test ! -e artifacts
 
-      - name: Commit ten-paper archive
+      - name: Commit archive
         shell: bash
         run: |
           set -euo pipefail
